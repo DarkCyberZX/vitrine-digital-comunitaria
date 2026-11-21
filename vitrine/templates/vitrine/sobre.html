@@ -1,0 +1,99 @@
+{% extends 'vitrine/base.html' %}
+{% load static %}
+{% block titulo %}Ajuda – Vitrine Digital Comunitária{% endblock %}
+
+{% block conteudo %}
+<section class="tela tela-ajuda" data-ouvir="Esta é a página de ajuda. Ela tem como comprar, como vender, o passo a passo com as telas para cadastrar a loja e para comentar, os recursos de acessibilidade e as perguntas frequentes. Para comprar, ache a loja pela busca ou pelo mapa, veja o preço e converse direto pelo WhatsApp. Para vender, fale com a Vitrine, entre no painel e coloque seus produtos digitando ou falando. Se precisar de ajuda, toque em Fale com a Vitrine.">
+
+  <header class="ajuda-topo">
+    <span class="ajuda-selo"><i data-lucide="life-buoy" class="ic-l" aria-hidden="true"></i> Central de ajuda</span>
+    <h1>Como podemos ajudar?</h1>
+    <p>Tudo o que você precisa para comprar e vender no seu bairro, explicado passo a passo.</p>
+    <nav class="ajuda-atalhos" aria-label="Partes da ajuda">
+      <a href="#comprar"><span class="aa-ic"><i data-lucide="shopping-bag" class="ic-l" aria-hidden="true"></i></span><span><b>Quero comprar</b><small>Achar lojas e falar com quem vende</small></span></a>
+      <a href="#vender"><span class="aa-ic laranja"><i data-lucide="store" class="ic-l" aria-hidden="true"></i></span><span><b>Quero vender</b><small>Colocar meus produtos na vitrine</small></span></a>
+      <a href="#guia-loja"><span class="aa-ic"><i data-lucide="list-checks" class="ic-l" aria-hidden="true"></i></span><span><b>Passo a passo</b><small>Cadastrar loja e comentar, com as telas</small></span></a>
+      <a href="#acessivel"><span class="aa-ic azul"><i data-lucide="accessibility" class="ic-l" aria-hidden="true"></i></span><span><b>Acessibilidade</b><small>Letra grande, contraste e voz</small></span></a>
+    </nav>
+  </header>
+
+  <section class="ajuda-bloco" id="comprar" aria-labelledby="tit-comprar">
+    <div class="ab-cab"><span class="ab-ic"><i data-lucide="shopping-bag" class="ic-l" aria-hidden="true"></i></span><div><h2 id="tit-comprar">Para quem compra</h2><p>Não precisa de conta para ver as lojas e conversar.</p></div></div>
+    <ol class="ajuda-passos">
+      <li><span class="ap-n">1</span><div><b>Ache a loja</b><p>Busque pelo produto, bairro ou CEP, toque em <b>Perto de mim</b> ou use os filtros de categoria, preço e nota.</p></div></li>
+      <li><span class="ap-n">2</span><div><b>Veja antes de sair de casa</b><p>Na página da loja estão os produtos com preço e foto, o mapa e o que outros clientes acharam.</p></div></li>
+      <li><span class="ap-n">3</span><div><b>Converse direto</b><p>Toque em <b>Conversar no WhatsApp</b>. Vocês combinam entrega e pagamento sem intermediário.</p></div></li>
+      <li><span class="ap-n">4</span><div><b>Avalie depois</b><p>Crie uma conta rápida e dê sua nota. Cada pessoa avalia uma vez cada loja, e pode mudar depois. <a href="#guia-comentar">Ver como comentar</a></p></div></li>
+    </ol>
+    <a class="ajuda-cta" href="{% url 'inicio' %}#tit-lista"><i data-lucide="map-pin" class="ic-l" aria-hidden="true"></i> Ver as lojas da região</a>
+  </section>
+
+  <section class="ajuda-bloco" id="vender" aria-labelledby="tit-vender">
+    <div class="ab-cab"><span class="ab-ic laranja"><i data-lucide="store" class="ic-l" aria-hidden="true"></i></span><div><h2 id="tit-vender">Para quem vende</h2><p>Grátis, sem taxa e sem comissão. O dinheiro fica com você.</p></div></div>
+    <ol class="ajuda-passos">
+      <li><span class="ap-n laranja">1</span><div><b>Cadastre a sua loja</b><p>Toque em <b>Cadastrar minha loja</b>, crie a conta, digite o CEP e confira no mapa. A loja aparece na hora. <a href="#guia-loja">Ver as telas</a></p></div></li>
+      <li><span class="ap-n laranja">2</span><div><b>Coloque os produtos</b><p>No painel, digite ou toque no microfone e fale: <i>“tapioca de queijo, oito reais”</i>. Se quiser, tire uma foto.</p></div></li>
+      <li><span class="ap-n laranja">3</span><div><b>Mude quando quiser</b><p>Toque no lápis para trocar preço ou foto, e na lixeira para tirar um produto da vitrine.</p></div></li>
+      <li><span class="ap-n laranja">4</span><div><b>Confira o Pix antes de entregar</b><p>Olhe o saldo no app do banco. Comprovante enviado por foto pode ser falso.</p></div></li>
+    </ol>
+    <div class="ajuda-cta-linha">
+      <a class="ajuda-cta laranja" href="{% url 'painel' %}"><i data-lucide="log-in" class="ic-l" aria-hidden="true"></i> Entrar no meu painel</a>
+      <a class="ajuda-cta contorno" href="{% url 'cadastro_loja' %}"><i data-lucide="store" class="ic-l" aria-hidden="true"></i> Cadastrar minha loja</a>
+    </div>
+  </section>
+
+  <section class="ajuda-bloco guia" id="guia-loja" aria-labelledby="tit-guia-loja">
+    <div class="ab-cab"><span class="ab-ic laranja"><i data-lucide="list-checks" class="ic-l" aria-hidden="true"></i></span><div><h2 id="tit-guia-loja">Passo a passo: cadastrar a sua loja</h2><p>Leva uns 3 minutos. Veja as telas que vão aparecer.</p></div></div>
+    <ol class="guia-lista" tabindex="0" aria-label="Telas do passo a passo (role para o lado)">
+      <li class="guia-passo"><figure><img src="{% static 'vitrine/guia/loja-1.jpg' %}" alt="Tela: Toque em “Cadastrar minha loja”" loading="lazy"></figure><div><span class="ap-n laranja">1</span><b>Toque em “Cadastrar minha loja”</b><p>Fica no fim da página inicial, em <b>Para quem vende</b>, e no menu <b>Vender</b>.</p></div></li>
+      <li class="guia-passo"><figure><img src="{% static 'vitrine/guia/loja-2.jpg' %}" alt="Tela: Crie a sua conta" loading="lazy"></figure><div><span class="ap-n laranja">2</span><b>Crie a sua conta</b><p>Só nome, usuário e senha. O e-mail é opcional e serve para recuperar a senha.</p></div></li>
+      <li class="guia-passo"><figure><img src="{% static 'vitrine/guia/loja-3.jpg' %}" alt="Tela: Conte sobre a loja" loading="lazy"></figure><div><span class="ap-n laranja">3</span><b>Conte sobre a loja</b><p>Nome da loja, como os clientes chamam você, o que vende e o seu WhatsApp.</p></div></li>
+      <li class="guia-passo"><figure><img src="{% static 'vitrine/guia/loja-4.jpg' %}" alt="Tela: Digite o CEP e confira no mapa" loading="lazy"></figure><div><span class="ap-n laranja">4</span><b>Digite o CEP e confira no mapa</b><p>O site completa bairro e rua sozinho e leva o mapa até a sua rua. Arraste o marcador até a porta da loja.</p></div></li>
+      <li class="guia-passo"><figure><img src="{% static 'vitrine/guia/loja-5.jpg' %}" alt="Tela: Pronto, a loja já está no ar" loading="lazy"></figure><div><span class="ap-n laranja">5</span><b>Pronto, a loja já está no ar</b><p>No seu painel você coloca os produtos e acompanha nota, avaliações e vendas.</p></div></li>
+    </ol>
+    <a class="ajuda-cta laranja" href="{% url 'cadastro_loja' %}"><i data-lucide="store" class="ic-l" aria-hidden="true"></i> Cadastrar minha loja agora</a>
+  </section>
+
+  <section class="ajuda-bloco guia" id="guia-comentar" aria-labelledby="tit-guia-comentar">
+    <div class="ab-cab"><span class="ab-ic"><i data-lucide="message-square-text" class="ic-l" aria-hidden="true"></i></span><div><h2 id="tit-guia-comentar">Passo a passo: avaliar e comentar</h2><p>Ajude os vizinhos a escolher onde comprar.</p></div></div>
+    <ol class="guia-lista" tabindex="0" aria-label="Telas do passo a passo (role para o lado)">
+      <li class="guia-passo"><figure><img src="{% static 'vitrine/guia/comentar-1.jpg' %}" alt="Tela: Abra a loja e desça até “Avaliações”" loading="lazy"></figure><div><span class="ap-n">1</span><b>Abra a loja e desça até “Avaliações”</b><p>Quem ainda não entrou vê os botões <b>Entrar para avaliar</b> e <b>Criar conta grátis</b>.</p></div></li>
+      <li class="guia-passo"><figure><img src="{% static 'vitrine/guia/comentar-2.jpg' %}" alt="Tela: Entre ou crie uma conta rápida" loading="lazy"></figure><div><span class="ap-n">2</span><b>Entre ou crie uma conta rápida</b><p>Depois de criar a conta, o site volta sozinho para a mesma loja.</p></div></li>
+      <li class="guia-passo"><figure><img src="{% static 'vitrine/guia/comentar-3.jpg' %}" alt="Tela: Escolha as estrelas e escreva" loading="lazy"></figure><div><span class="ap-n">3</span><b>Escolha as estrelas e escreva</b><p>Toque de 1 a 5 estrelas e conte como foi. Depois toque em <b>Publicar avaliação</b>.</p></div></li>
+      <li class="guia-passo"><figure><img src="{% static 'vitrine/guia/comentar-4.jpg' %}" alt="Tela: Seu comentário aparece na hora" loading="lazy"></figure><div><span class="ap-n">4</span><b>Seu comentário aparece na hora</b><p>Ele fica marcado como <b>Você</b>. Cada pessoa avalia uma vez cada loja; se avaliar de novo, a anterior é atualizada.</p></div></li>
+    </ol>
+  </section>
+
+  <section class="ajuda-bloco" id="acessivel" aria-labelledby="tit-acessivel">
+    <div class="ab-cab"><span class="ab-ic azul"><i data-lucide="accessibility" class="ic-l" aria-hidden="true"></i></span><div><h2 id="tit-acessivel">Acessibilidade</h2><p>Feita para crianças, adultos e idosos. Toque em <b>Acessibilidade</b>, no alto da tela.</p></div></div>
+    <div class="ajuda-recursos">
+      <div class="ar-card"><i data-lucide="volume-2" class="ic-l" aria-hidden="true"></i><b>Ouvir a tela</b><p>Uma voz explica o que fazer em cada página. Na loja, lê todos os produtos e preços.</p></div>
+      <div class="ar-card"><i data-lucide="a-large-small" class="ic-l" aria-hidden="true"></i><b>Letra grande</b><p>Aumenta todos os textos. A escolha fica salva para a próxima visita.</p></div>
+      <div class="ar-card"><i data-lucide="contrast" class="ic-l" aria-hidden="true"></i><b>Alto contraste</b><p>Preto e branco com bordas fortes, para quem enxerga pouco.</p></div>
+      <div class="ar-card"><i data-lucide="keyboard" class="ic-l" aria-hidden="true"></i><b>Teclado e leitor de tela</b><p>Dá para navegar sem mouse, e os botões têm nomes para leitores de tela.</p></div>
+    </div>
+    <button class="ajuda-cta azul js-abre-acess" type="button"><i data-lucide="settings-2" class="ic-l" aria-hidden="true"></i> Abrir as opções de acessibilidade</button>
+  </section>
+
+  <section class="ajuda-bloco" id="perguntas" aria-labelledby="tit-perguntas">
+    <div class="ab-cab"><span class="ab-ic"><i data-lucide="circle-help" class="ic-l" aria-hidden="true"></i></span><div><h2 id="tit-perguntas">Perguntas frequentes</h2><p>Toque em uma pergunta para ver a resposta.</p></div></div>
+    <div class="faq-lista">
+      <details class="faq-item"><summary><i data-lucide="hand-coins" class="ic-l" aria-hidden="true"></i><span>Preciso pagar alguma coisa?</span><i data-lucide="chevron-down" class="ic-l faq-seta" aria-hidden="true"></i></summary><p>Não. A Vitrine é gratuita para quem compra e para quem vende, sem taxa e sem comissão.</p></details>
+      <details class="faq-item"><summary><i data-lucide="wallet" class="ic-l" aria-hidden="true"></i><span>Como eu pago pelo que comprar?</span><i data-lucide="chevron-down" class="ic-l faq-seta" aria-hidden="true"></i></summary><p>Direto com quem vende, pelo WhatsApp: Pix, dinheiro ou cartão, do jeito que a loja aceitar. A Vitrine não fica no meio do pagamento.</p></details>
+      <details class="faq-item"><summary><i data-lucide="pencil" class="ic-l" aria-hidden="true"></i><span>Como mudo o preço de um produto?</span><i data-lucide="chevron-down" class="ic-l faq-seta" aria-hidden="true"></i></summary><p>Entre no seu painel, toque no lápis ao lado do produto, mude o preço e toque em <b>Salvar mudanças</b>.</p></details>
+      <details class="faq-item"><summary><i data-lucide="camera" class="ic-l" aria-hidden="true"></i><span>Como coloco foto nos produtos?</span><i data-lucide="chevron-down" class="ic-l faq-seta" aria-hidden="true"></i></summary><p>No painel, no passo <b>Foto do produto</b>, tire uma foto com o celular ou escolha uma da galeria. Fotografe perto da janela, com luz do dia, sobre um fundo liso.</p></details>
+      <details class="faq-item"><summary><i data-lucide="key-round" class="ic-l" aria-hidden="true"></i><span>Esqueci a minha senha. E agora?</span><i data-lucide="chevron-down" class="ic-l faq-seta" aria-hidden="true"></i></summary><p>Na tela de entrar, toque em <b>Esqueci minha senha</b>. Se você não colocou e-mail na conta, fale com a Vitrine pelo WhatsApp que a gente ajuda.</p></details>
+      <details class="faq-item"><summary><i data-lucide="star" class="ic-l" aria-hidden="true"></i><span>Por que só posso avaliar uma vez cada loja?</span><i data-lucide="chevron-down" class="ic-l faq-seta" aria-hidden="true"></i></summary><p>Para a nota ser justa: ninguém consegue encher uma loja de notas boas ou ruins. Se você avaliar de novo, a sua avaliação anterior é atualizada.</p></details>
+    </div>
+  </section>
+
+  <section class="ajuda-projeto" aria-labelledby="tit-projeto">
+    <div>
+      <h2 id="tit-projeto">Sobre o projeto</h2>
+      <p>A Vitrine Digital Comunitária é uma <b>tecnologia social</b>: dá visibilidade a feirantes, artesãos e pequenos comerciantes de Maceió, para o dinheiro circular no próprio bairro.</p>
+      <p class="ap-nota">Protótipo acadêmico do curso de Bacharelado em Sistemas de Informação do IFAL, disciplina Tecnologias Sociais e Assistivas, 2026. Lojas, avaliações e telefones são fictícios.</p>
+    </div>
+    <a class="ajuda-cta zap" href="https://wa.me/5582900000000?text={{ 'Olá! Tenho uma dúvida sobre a Vitrine Digital Comunitária.'|urlencode }}" target="_blank" rel="noopener noreferrer"><i data-lucide="message-circle" class="ic-l" aria-hidden="true"></i> Ainda com dúvida? Fale com a Vitrine</a>
+  </section>
+</section>
+{% endblock %}

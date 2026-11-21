@@ -1,0 +1,123 @@
+{% load static %}<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{% block titulo %}Vitrine Digital Comunitária{% endblock %}</title>
+<meta name="theme-color" content="#0f766e">
+<link rel="icon" type="image/svg+xml" href="{% static 'vitrine/logo.svg' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+{% block cabeca %}{% endblock %}
+<link rel="stylesheet" href="{% static 'vitrine/app.css' %}?v=67">
+</head>
+<body>
+<div class="app">
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+  <header class="cabecalho" aria-label="Cabeçalho do site">
+    <div class="cab-dentro">
+      <a class="cab-marca" href="{% url 'inicio' %}" aria-label="Vitrine Digital Comunitária – página inicial">
+        <span class="cab-logo" aria-hidden="true"><img src="{% static 'vitrine/logo.svg' %}" alt="" class="logo-img"></span>
+        <span class="cab-nome">Vitrine Digital<small>Comunitária • Maceió</small></span>
+      </a>
+      <nav class="cab-links" aria-label="Menu principal">
+        <a href="{% url 'inicio' %}#topo" data-secao="topo" class="{% if aba == 'inicio' %}on{% endif %}"{% if aba == 'inicio' %} aria-current="true"{% endif %}>Comprar</a>
+        <a href="{% url 'inicio' %}#tit-lista" data-secao="tit-lista">Lojas</a>
+        <a href="{% url 'inicio' %}#tit-como" data-secao="tit-como">Como funciona</a>
+        <a href="{% url 'sobre' %}" class="{% if aba == 'sobre' %}on{% endif %}"{% if aba == 'sobre' %} aria-current="page"{% endif %}>Ajuda</a>
+      </nav>
+      <div class="cab-acoes">
+        {% if user.is_authenticated %}
+        <span class="cab-ola">Olá, <b>{{ user.first_name|default:user.username }}</b></span>
+        <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit" class="cab-link">Sair</button></form>
+        {% else %}
+        <a class="cab-link" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">Entrar</a>
+        {% endif %}
+        <button type="button" class="cab-acess js-abre-acess" aria-haspopup="dialog" aria-controls="acess-fundo"><i data-lucide="accessibility" class="ic-l" aria-hidden="true"></i> Acessibilidade</button>
+        <a class="cab-cta {% if aba == 'vender' %}on{% endif %}" href="{% url 'painel' %}"><i data-lucide="store" class="ic-l" aria-hidden="true"></i> Sou comerciante</a>
+      </div>
+    </div>
+  </header>
+  <div id="conteudo" tabindex="-1"></div>
+  {% if messages %}
+  <div class="msgs" role="status">
+    {% for m in messages %}<div class="msg {{ m.tags }}">{{ m }}</div>{% endfor %}
+  </div>
+  {% endif %}
+
+  {% block conteudo %}{% endblock %}
+
+  <footer class="rodape" aria-label="Rodapé">
+    <div class="rodape-dentro">
+      <div class="rod-marca">
+        <a class="cab-marca" href="{% url 'inicio' %}"><span class="cab-logo" aria-hidden="true"><img src="{% static 'vitrine/logo.svg' %}" alt="" class="logo-img"></span><span class="cab-nome">Vitrine Digital<small>Comunitária • Maceió</small></span></a>
+        <p>Tecnologia social que dá visibilidade a feirantes, artesãos e pequenos comerciantes. Compre de quem é do seu bairro.</p>
+        <a class="rod-zap" href="https://wa.me/5582900000000?text={{ 'Olá! Tenho uma dúvida sobre a Vitrine Digital Comunitária.'|urlencode }}" target="_blank" rel="noopener noreferrer"><i data-lucide="message-circle" class="ic-l" aria-hidden="true"></i> Fale com a Vitrine</a>
+      </div>
+      <nav class="rod-col" aria-label="Navegar">
+        <b>Navegar</b>
+        <a href="{% url 'inicio' %}">Comprar</a>
+        <a href="{% url 'inicio' %}#tit-lista">Lojas da região</a>
+        <a href="{% url 'inicio' %}#tit-como">Como funciona</a>
+        <a href="{% url 'sobre' %}">Ajuda</a>
+        {% if not user.is_authenticated %}<a href="{% url 'cadastro' %}">Criar conta</a>{% endif %}
+      </nav>
+      <nav class="rod-col" aria-label="Para quem vende">
+        <b>Para quem vende</b>
+        <a href="{% url 'cadastro_loja' %}">Cadastrar minha loja</a>
+        <a href="{% url 'painel' %}">Painel do comerciante</a>
+        <a href="{% url 'password_reset' %}">Esqueci minha senha</a>
+      </nav>
+      <div class="rod-col">
+        <b>Acessibilidade</b>
+        <button type="button" class="rod-link js-abre-acess"><i data-lucide="volume-2" class="ic-l" aria-hidden="true"></i> Ouvir a tela</button>
+        <button type="button" class="rod-link js-abre-acess"><i data-lucide="a-large-small" class="ic-l" aria-hidden="true"></i> Letra grande</button>
+        <button type="button" class="rod-link js-abre-acess"><i data-lucide="contrast" class="ic-l" aria-hidden="true"></i> Alto contraste</button>
+        <span class="rod-selo" title="Auditoria automática com axe-core (0 violações) e verificação manual de teclado, foco, zoom e espaçamento">WCAG 2.2 AA · testado com axe</span>
+      </div>
+    </div>
+    <div class="rod-ifal">
+      <span class="rod-ifal-logo"><img src="{% static 'vitrine/ifal.png' %}" alt="Instituto Federal de Alagoas (IFAL)" width="86" height="110"></span>
+      <div><small>Projeto acadêmico</small><b>Instituto Federal de Alagoas</b><span>Bacharelado em Sistemas de Informação • Tecnologias Sociais e Assistivas • 2026</span></div>
+    </div>
+    <div class="rodape-base">
+      <span>© 2026 Vitrine Digital Comunitária</span>
+      <span>Lojas, avaliações e telefones fictícios • Fotos: Unsplash</span>
+    </div>
+  </footer>
+
+  <nav class="nav" aria-label="Navegação">
+    <a href="{% url 'inicio' %}" class="{% if aba == 'inicio' %}on{% endif %}"><span class="i" aria-hidden="true"><i data-lucide="map" class="ic-l" aria-hidden="true"></i></span>Comprar</a>
+    <a href="{% url 'painel' %}" class="{% if aba == 'vender' %}on{% endif %}"><span class="i" aria-hidden="true"><i data-lucide="store" class="ic-l" aria-hidden="true"></i></span>Vender</a>
+    <button type="button" id="btn-acess" class="js-abre-acess" aria-haspopup="dialog" aria-controls="acess-fundo"><span class="i" aria-hidden="true"><i data-lucide="accessibility" class="ic-l" aria-hidden="true"></i></span>Acessível</button>
+    <a href="{% url 'sobre' %}" class="{% if aba == 'sobre' %}on{% endif %}"><span class="i" aria-hidden="true"><i data-lucide="circle-help" class="ic-l" aria-hidden="true"></i></span>Ajuda</a>
+  </nav>
+
+  <div class="acess-fundo" id="acess-fundo" role="dialog" aria-modal="true" aria-labelledby="acess-tit">
+    <div class="acess">
+      <h3 id="acess-tit">Acessibilidade</h3>
+      <div class="sub">Deixe o aplicativo do seu jeito</div>
+      <button type="button" class="opc" id="opc-ouvir" aria-pressed="false">
+        <span class="ic" aria-hidden="true"><i data-lucide="volume-2" class="ic-l" aria-hidden="true"></i></span><span class="tx">Ouvir esta tela<small>Explica em voz alta o que fazer aqui</small></span>
+      </button>
+      <button type="button" class="opc" id="opc-letra" aria-pressed="false">
+        <span class="ic" aria-hidden="true"><i data-lucide="a-large-small" class="ic-l" aria-hidden="true"></i></span><span class="tx">Letra grande<small>Aumenta textos e botões</small></span><span class="est">Desligado</span>
+      </button>
+      <button type="button" class="opc" id="opc-contraste" aria-pressed="false">
+        <span class="ic" aria-hidden="true"><i data-lucide="contrast" class="ic-l" aria-hidden="true"></i></span><span class="tx">Alto contraste<small>Preto e branco, mais fácil de enxergar</small></span><span class="est">Desligado</span>
+      </button>
+      <div class="opc opc-voz" id="opc-voz">
+        <span class="ic" aria-hidden="true"><i data-lucide="audio-lines" class="ic-l" aria-hidden="true"></i></span>
+        <span class="tx"><label for="voz-escolha">Voz da leitura</label><small>Escolha a que soar melhor no seu aparelho</small>
+          <span class="voz-linha"><select id="voz-escolha"><option value="">Automática (a melhor deste aparelho)</option></select>
+          <button type="button" class="voz-testar" id="voz-testar"><i data-lucide="play" class="ic-l" aria-hidden="true"></i> Ouvir</button></span></span>
+      </div>
+      <button type="button" class="btn-sec fechar" id="acess-fechar">Fechar</button>
+    </div>
+  </div>
+</div>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script src="{% static 'vitrine/acessibilidade.js' %}?v=10"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,11 @@
+{% extends 'vitrine/base.html' %}
+{% block titulo %}Senha trocada! – Vitrine Digital{% endblock %}
+{% block conteudo %}
+<section class="tela login" data-ouvir="Pronto, sua senha foi trocada. Toque em Entrar e use a senha nova.">
+  <div class="marca"><div class="logo" aria-hidden="true"><i data-lucide="circle-check" class="ic-l" aria-hidden="true"></i></div><div><h1>Senha trocada!</h1><small style="color:var(--cinza)">Agora é só entrar com a senha nova</small></div></div>
+  <div class="caixa" style="margin:20px 0 0">
+    <p>Sua senha foi trocada com sucesso.</p>
+    <a class="btn-prim" href="{% url 'login' %}" style="display:flex;justify-content:center;align-items:center">Entrar</a>
+  </div>
+</section>
+{% endblock %}

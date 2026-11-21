@@ -1,0 +1,25 @@
+{% extends 'vitrine/base.html' %}
+{% load static %}
+{% block titulo %}Esqueci minha senha – Vitrine Digital{% endblock %}
+{% block conteudo %}
+<section class="tela login com-lado" data-ouvir="Escreva o e-mail que você colocou quando criou a conta e toque em Enviar link. Se você não colocou e-mail, fale com a Vitrine pelo WhatsApp que a gente troca a sua senha.">
+  <aside class="conta-lado" style="--foto:url('{% static 'vitrine/fotos/mosaico-4.jpg' %}')"><div class="cl-txt"><img src="{% static 'vitrine/logo.svg' %}" alt="" class="cl-logo"><h2>Acontece com todo mundo</h2><ul><li><i data-lucide="mail" class="ic-l" aria-hidden="true"></i>Mandamos um link para o e-mail da sua conta</li><li><i data-lucide="key-round" class="ic-l" aria-hidden="true"></i>Você cria uma senha nova em poucos passos</li><li><i data-lucide="message-circle" class="ic-l" aria-hidden="true"></i>Sem e-mail na conta? A Vitrine ajuda pelo WhatsApp</li></ul></div></aside>
+  <div class="marca"><div class="logo" aria-hidden="true"><i data-lucide="mail" class="ic-l" aria-hidden="true"></i></div><div><h1>Esqueci minha senha</h1><small style="color:var(--cinza)">Vamos mandar um link para você criar outra</small></div></div>
+  <form class="caixa" method="post" style="margin:20px 0 0" novalidate>
+    {% csrf_token %}
+    {% for campo in form %}
+    <div class="campo cheio" style="margin-top:12px">
+      <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>{{ campo }}
+      {% if campo.help_text %}<small class="ajuda">{{ campo.help_text|safe }}</small>{% endif %}
+      {{ campo.errors }}
+    </div>
+    {% endfor %}
+    <button class="btn-prim" type="submit">Enviar link</button>
+  </form>
+  <div class="caixa aviso-sem-email">
+    <h3>Não colocou e-mail na conta?</h3>
+    <p class="dica">Fale com a Vitrine pelo WhatsApp, diga seu nome e seu usuário, e a gente cria uma senha nova para você.</p>
+    <a class="btn-sec" href="https://wa.me/5582900000000?text={{ 'Olá! Esqueci a senha da minha conta na Vitrine Digital Comunitária.'|urlencode }}" target="_blank" rel="noopener noreferrer"><i data-lucide="message-circle" class="ic-l" aria-hidden="true"></i> Falar com a Vitrine</a>
+  </div>
+</section>
+{% endblock %}

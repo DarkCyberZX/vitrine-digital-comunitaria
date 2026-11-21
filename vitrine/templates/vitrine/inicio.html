@@ -1,0 +1,230 @@
+{% extends 'vitrine/base.html' %}
+{% load static %}
+{% block cabeca %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css">{% endblock %}
+
+{% block conteudo %}
+<section class="tela tela-inicio" data-ouvir="Esta é a Vitrine Digital Comunitária, para comprar de quem é do seu bairro. Logo abaixo tem uma busca: escreva o nome do bairro ou do produto. O botão Perto de mim mostra as lojas mais próximas. Mais abaixo estão os filtros, o mapa e a lista de lojas, histórias de quem faz, o que os clientes dizem, como funciona e as perguntas frequentes. Toque em uma loja para ver os produtos e os preços.">
+
+  <header class="hero" id="topo" style="--foto:url('{% static 'vitrine/fotos/abertura-maceio.jpg' %}')">
+    <div class="hero-conteudo">
+     <div class="hero-texto">
+      <div class="marca">
+        <div class="logo" aria-hidden="true"><img src="{% static 'vitrine/logo.svg' %}" alt="" class="logo-img"></div>
+        <div><span class="marca-nome">Vitrine Digital Comunitária</span><small>Maceió • comércio local</small></div>
+      </div>
+      <h1>Compre de quem faz o seu bairro</h1>
+      <p class="hero-sub">Feirantes, artesãos e pequenos comerciantes num só lugar. Veja o preço antes de sair de casa e combine direto pelo WhatsApp, sem taxa nenhuma.</p>
+      <form class="busca" role="search" id="form-busca" action="#tit-lista">
+        <div class="busca-campo">
+          <i data-lucide="search" class="ic-l busca-lupa" aria-hidden="true"></i>
+          <input id="campo-busca" type="search" placeholder="Loja, produto ou bairro" aria-label="Buscar por produto, loja, bairro ou rua" autocomplete="off" aria-describedby="busca-dica">
+          <button class="btn-buscar" type="submit">Buscar</button>
+        </div>
+        <button class="btn-gps" id="btn-gps" type="button" aria-label="Mostrar lojas perto de mim"><i data-lucide="locate-fixed" class="ic-l" aria-hidden="true"></i> Perto de mim</button>
+      </form>
+      <p class="busca-dica" id="busca-dica" aria-live="polite"></p>
+      <ul class="numeros" aria-label="A Vitrine em números">
+        <li><span class="num-ic" aria-hidden="true"><i data-lucide="store" class="ic-l"></i></span><span class="num-tx"><b>{{ total_bancas }}</b><span>lojas do bairro</span></span></li>
+        <li><span class="num-ic" aria-hidden="true"><i data-lucide="tag" class="ic-l"></i></span><span class="num-tx"><b>{{ total_produtos }}</b><span>produtos com preço</span></span></li>
+        {% if nota_geral %}<li><span class="num-ic num-ic-estrela" aria-hidden="true"><i data-lucide="star" class="ic-l"></i></span><span class="num-tx"><b>{{ nota_geral|floatformat:1 }}</b><span>nota média dos clientes</span></span></li>{% endif %}
+        <li><span class="num-ic" aria-hidden="true"><i data-lucide="badge-check" class="ic-l"></i></span><span class="num-tx"><b>Grátis</b><span>sem taxa</span></span></li>
+      </ul>
+     </div>
+     <div class="hero-celular" aria-hidden="true">
+       <div class="celular">
+         <span class="celular-notch"></span>
+         <img src="{% static 'vitrine/fotos/tela-banca-celular.jpg' %}?v=7" alt="" width="585" height="1170">
+       </div>
+       <span class="flutua f1"><i data-lucide="star" class="ic-l ic-estrela" aria-hidden="true"></i> 4,8 • 4 avaliações</span>
+       <span class="flutua f2"><i data-lucide="message-circle" class="ic-l" aria-hidden="true"></i> Direto no WhatsApp</span>
+       <span class="flutua f3"><i data-lucide="tag" class="ic-l" aria-hidden="true"></i> Preço na tela</span>
+     </div>
+    </div>
+  </header>
+
+
+
+
+  <section class="bloco bancas-sec" aria-labelledby="tit-lista">
+    <div class="bloco-cab bancas-cab">
+      <div><h2 id="tit-lista" class="bloco-tit">Lojas da região</h2><span id="qtd" aria-live="polite"></span></div>
+      <button type="button" class="btn-filtros" id="btn-filtros" aria-controls="filtros" aria-expanded="false"><i data-lucide="sliders-horizontal" class="ic-l" aria-hidden="true"></i> Filtros <span class="n-filtros" id="n-filtros"></span></button>
+    </div>
+    <div class="bancas-grid">
+      <aside class="filtros" id="filtros" aria-label="Filtros das lojas">
+        <div class="filtros-topo"><b>Filtrar lojas</b><button type="button" class="filtros-fechar" id="filtros-fechar" aria-label="Fechar filtros">✕</button></div>
+        <form id="form-filtros" onsubmit="return false">
+          <label class="f-grupo"><span class="f-tit">Ordenar por</span>
+            <select name="ordem" id="f-ordem">
+              <option value="nota">Mais bem avaliadas</option>
+              <option value="perto">Mais perto de mim</option>
+              <option value="preco">Menor preço</option>
+            </select>
+          </label>
+          <fieldset class="f-grupo f-local"><legend class="f-tit">Sua localização</legend>
+            <p class="local-status" id="local-status" aria-live="polite">Compartilhe sua localização para ver a distância até cada loja.</p>
+            <button type="button" class="btn-local" id="f-gps"><i data-lucide="locate-fixed" class="ic-l" aria-hidden="true"></i> Usar minha localização</button>
+          </fieldset>
+          <fieldset class="f-grupo" id="f-km-grupo"><legend class="f-tit">Distância máxima</legend>
+            <label class="f-op"><input type="radio" name="km" value="" checked> Qualquer distância</label>
+            <label class="f-op"><input type="radio" name="km" value="1"> Até 1 km</label>
+            <label class="f-op"><input type="radio" name="km" value="2"> Até 2 km</label>
+            <label class="f-op"><input type="radio" name="km" value="5"> Até 5 km</label>
+            <label class="f-op"><input type="radio" name="km" value="10"> Até 10 km</label>
+            <small class="f-dica" id="f-km-dica">Funciona depois que você compartilha sua localização.</small>
+          </fieldset>
+          <fieldset class="f-grupo"><legend class="f-tit">Categoria</legend>
+            {% for valor, nome, icone, qtd in categorias %}<label class="f-op"><input type="checkbox" name="cat" value="{{ valor }}"> <i data-lucide="{{ icone }}" class="ic-l" aria-hidden="true"></i> {{ nome }} <span class="f-qtd">{{ qtd }}</span></label>{% endfor %}
+          </fieldset>
+          <fieldset class="f-grupo"><legend class="f-tit">Mostrar só</legend>
+            <label class="f-op"><input type="checkbox" name="aberta"> Aberto agora</label>
+            <label class="f-op"><input type="checkbox" name="pronta"> Tem pronta entrega</label>
+          </fieldset>
+          <fieldset class="f-grupo"><legend class="f-tit">Preço</legend>
+            <label class="f-op"><input type="radio" name="preco" value="" checked> Qualquer preço</label>
+            <label class="f-op"><input type="radio" name="preco" value="ate10"> Até R$ 10</label>
+            <label class="f-op"><input type="radio" name="preco" value="10a50"> De R$ 10 a R$ 50</label>
+            <label class="f-op"><input type="radio" name="preco" value="mais50"> Acima de R$ 50</label>
+          </fieldset>
+          <fieldset class="f-grupo"><legend class="f-tit">Avaliação</legend>
+            <label class="f-op"><input type="radio" name="nota" value="" checked> Qualquer nota</label>
+            <label class="f-op"><input type="radio" name="nota" value="4.5"> <span class="estrelas-txt" aria-hidden="true">★★★★½</span> 4,5 ou mais</label>
+            <label class="f-op"><input type="radio" name="nota" value="4"> <span class="estrelas-txt" aria-hidden="true">★★★★</span> 4 ou mais</label>
+            <label class="f-op"><input type="radio" name="nota" value="3.5"> <span class="estrelas-txt" aria-hidden="true">★★★½</span> 3,5 ou mais</label>
+            <label class="f-op"><input type="radio" name="nota" value="3"> <span class="estrelas-txt" aria-hidden="true">★★★</span> 3 ou mais</label>
+            <label class="f-op"><input type="radio" name="nota" value="2"> <span class="estrelas-txt" aria-hidden="true">★★</span> 2 ou mais</label>
+          </fieldset>
+          <fieldset class="f-grupo"><legend class="f-tit">Bairro</legend>
+            {% for bairro in bairros %}<label class="f-op"><input type="checkbox" name="bairro" value="{{ bairro }}"> {{ bairro }}</label>{% endfor %}
+          </fieldset>
+          <div class="filtros-acoes">
+            <button type="button" class="btn-sec" id="f-limpar">Limpar filtros</button>
+            <button type="button" class="btn-prim" id="f-aplicar">Ver lojas</button>
+          </div>
+        </form>
+      </aside>
+      <div class="resultados">
+        <div id="mapa" role="region" aria-label="Mapa dos vendedores"></div>
+        <div class="lista" id="lista"></div>
+      </div>
+    </div>
+  </section>
+
+  {% if historias %}
+  <section class="bloco historias" aria-labelledby="tit-historias">
+    <div class="bloco-cab"><div><h2 id="tit-historias" class="bloco-tit">Histórias de quem faz</h2><p class="bloco-sub">Por trás de cada loja tem alguém do bairro.</p></div></div>
+    <div class="hist-grade">
+      {% for h in historias %}
+      <a class="hist-card" href="{% url 'banca' h.b.pk %}">
+        <div class="hist-foto" style="background-image:url('{{ h.b.foto_url }}')">
+          <span class="hist-cat"><i data-lucide="{{ h.b.icone_categoria }}" class="ic-l" aria-hidden="true"></i> {{ h.b.get_categoria_display }}</span>
+        </div>
+        <div class="hist-corpo">
+          <blockquote class="hist-texto">“{{ h.trecho }}”</blockquote>
+          <div class="hist-pessoa">
+            <span class="quem-avatar" aria-hidden="true">{{ h.b.primeiro_nome|first|upper }}</span>
+            <span><b>{{ h.b.responsavel_nome }}</b><small>{{ h.b.nome }} • {{ h.b.bairro }}</small></span>
+          </div>
+          <span class="hist-link">Conhecer a loja <i data-lucide="arrow-right" class="ic-l" aria-hidden="true"></i></span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if depoimentos %}
+  <section class="bloco vizinhos" aria-labelledby="tit-vizinhos">
+    <div class="bloco-cab"><div><h2 id="tit-vizinhos" class="bloco-tit">O que os vizinhos dizem</h2><p class="bloco-sub">Avaliações recentes de quem comprou nas lojas da Vitrine.</p></div><span>avaliações fictícias de demonstração</span></div>
+    <div class="viz-grade">
+      {% for a in depoimentos %}
+      <figure class="viz-card">
+        <div class="viz-nota"><span class="estrelas" aria-hidden="true">{% for i in "12345" %}<span class="e {% if forloop.counter <= a.nota %}cheia{% endif %}">★</span>{% endfor %}</span><span class="sr-only">Nota {{ a.nota }} de 5</span></div>
+        <blockquote>{{ a.comentario }}</blockquote>
+        <figcaption>
+          <span class="avatar" aria-hidden="true">{{ a.nome|first|upper }}</span>
+          <span><b>{{ a.nome }}</b><small>sobre <a href="{% url 'banca' a.banca_id %}">{{ a.banca.nome }}</a></small></span>
+        </figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+
+  <section class="bloco como" aria-labelledby="tit-como">
+    <h2 id="tit-como" class="bloco-tit">Como funciona</h2>
+    <p class="como-sub">Comprar do bairro em três passos simples.</p>
+    <ol class="como-passos">
+      <li><span class="como-num" aria-hidden="true">1</span><span class="como-ic" aria-hidden="true"><i data-lucide="map-pinned" class="ic-l" aria-hidden="true"></i></span><b>Ache no mapa</b><span class="como-tx">Veja as lojas perto de você e o que cada uma vende.</span></li>
+      <li><span class="como-num" aria-hidden="true">2</span><span class="como-ic" aria-hidden="true"><i data-lucide="tag" class="ic-l" aria-hidden="true"></i></span><b>Veja o preço</b><span class="como-tx">Preço e disponibilidade na tela, sem perguntar no privado.</span></li>
+      <li><span class="como-num" aria-hidden="true">3</span><span class="como-ic" aria-hidden="true"><i data-lucide="message-circle" class="ic-l" aria-hidden="true"></i></span><b>Combine no WhatsApp</b><span class="como-tx">Converse direto com quem produz. Sem intermediário, sem taxa.</span></li>
+    </ol>
+  </section>
+
+  <section class="bloco faq" aria-labelledby="tit-faq">
+    <div class="bloco-cab"><div><h2 id="tit-faq" class="bloco-tit">Perguntas frequentes</h2><p class="bloco-sub">Toque em uma pergunta para ver a resposta.</p></div></div>
+    <div class="faq-lista">
+      <details class="faq-item">
+        <summary><i data-lucide="hand-coins" class="ic-l" aria-hidden="true"></i><span>Preciso pagar alguma coisa para usar a Vitrine?</span><i data-lucide="chevron-down" class="ic-l faq-seta" aria-hidden="true"></i></summary>
+        <p>Não. A Vitrine é gratuita para quem compra e para quem vende. Não cobramos taxa nem comissão sobre as vendas.</p>
+      </details>
+      <details class="faq-item">
+        <summary><i data-lucide="wallet" class="ic-l" aria-hidden="true"></i><span>Como eu pago pelo que comprar?</span><i data-lucide="chevron-down" class="ic-l faq-seta" aria-hidden="true"></i></summary>
+        <p>Você combina direto com quem vende, pelo WhatsApp: Pix, dinheiro ou cartão, do jeito que a loja aceitar. A Vitrine não fica no meio do pagamento.</p>
+      </details>
+      <details class="faq-item">
+        <summary><i data-lucide="shield-check" class="ic-l" aria-hidden="true"></i><span>É seguro comprar por aqui?</span><i data-lucide="chevron-down" class="ic-l faq-seta" aria-hidden="true"></i></summary>
+        <p>Você conversa direto com quem vende e pode ler as avaliações de outros clientes antes de comprar. Para quem vende, a Vitrine mostra um aviso para só entregar o produto depois de conferir o Pix no aplicativo do banco.</p>
+      </details>
+      <details class="faq-item">
+        <summary><i data-lucide="accessibility" class="ic-l" aria-hidden="true"></i><span>Não sei mexer muito no celular. Consigo usar?</span><i data-lucide="chevron-down" class="ic-l faq-seta" aria-hidden="true"></i></summary>
+        <p>Consegue. Toque em <b>Acessível</b> para deixar a letra grande, usar alto contraste ou ouvir em voz alta o que fazer em cada tela. Na página de cada loja, o botão <b>Ouvir produtos e preços</b> lê tudo para você.</p>
+      </details>
+      <details class="faq-item">
+        <summary><i data-lucide="user-round" class="ic-l" aria-hidden="true"></i><span>Preciso criar conta para comprar?</span><i data-lucide="chevron-down" class="ic-l faq-seta" aria-hidden="true"></i></summary>
+        <p>Não. Para ver as lojas e conversar no WhatsApp não precisa de conta. A conta só é pedida para avaliar uma loja, e cada pessoa avalia uma vez cada loja.</p>
+      </details>
+      <details class="faq-item">
+        <summary><i data-lucide="store" class="ic-l" aria-hidden="true"></i><span>Como coloco a minha loja na Vitrine?</span><i data-lucide="chevron-down" class="ic-l faq-seta" aria-hidden="true"></i></summary>
+        <p>Toque em <b>Cadastrar minha loja</b>, crie sua conta e marque no mapa onde você fica. É grátis e a loja aparece na hora. Depois é só colocar os produtos, digitando ou falando.</p>
+      </details>
+    </div>
+  </section>
+
+
+  {% if not user.is_authenticated or not user.banca %}
+  <section class="vender-sec" aria-labelledby="tit-vender">
+    <div class="vender-mosaico" aria-hidden="true">
+      <img src="{% static 'vitrine/fotos/mosaico-1.jpg' %}" alt="" loading="lazy">
+      <img src="{% static 'vitrine/fotos/mosaico-2.jpg' %}" alt="" loading="lazy">
+      <img src="{% static 'vitrine/fotos/mosaico-3.jpg' %}" alt="" loading="lazy">
+      <img src="{% static 'vitrine/fotos/mosaico-4.jpg' %}" alt="" loading="lazy">
+    </div>
+    <div class="vender-corpo">
+      <span class="vender-tag">Para quem vende</span>
+      <h2 id="tit-vender">Venda para o seu bairro sem pagar taxa</h2>
+      <p>Feirante, artesão, ambulante ou quem presta serviço: cadastre sua loja em poucos minutos e seja encontrado pelos vizinhos no mapa.</p>
+      <ul class="vender-vant">
+        <li><span class="vv-ic" aria-hidden="true"><i data-lucide="mic" class="ic-l" aria-hidden="true"></i></span><span><b>Cadastre do seu jeito</b>Digite ou, se preferir, fale o produto e o preço.</span></li>
+        <li><span class="vv-ic" aria-hidden="true">0%</span><span><b>Sem taxa nenhuma</b>Você combina e recebe direto do cliente.</span></li>
+      </ul>
+      <div class="vender-botoes">
+        <a class="btn-vender" href="{% url 'cadastro_loja' %}">Cadastrar minha loja grátis</a>
+        {% if not user.is_authenticated %}<a class="btn-vender-sec" href="{% url 'login' %}?next={% url 'painel' %}">Já tenho loja · Entrar</a>{% endif %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+</section>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+{{ bancas_json|json_script:"dados-bancas" }}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+<script src="{% static 'vitrine/mapa.js' %}?v=23"></script>
+<script src="{% static 'vitrine/numeros.js' %}?v=1"></script>
+{% endblock %}

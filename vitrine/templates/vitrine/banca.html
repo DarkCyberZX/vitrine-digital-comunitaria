@@ -1,0 +1,192 @@
+{% extends 'vitrine/base.html' %}
+{% load static l10n %}
+{% block titulo %}{{ b.nome }} – Vitrine Digital{% endblock %}
+{% block cabeca %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">{% endblock %}
+
+{% block conteudo %}
+<section class="tela tela-banca tela-loja" data-ouvir="Esta é a página de uma loja. Logo abaixo do nome está a história de quem faz os produtos. Depois vêm os produtos com os preços e as avaliações dos clientes. Para ouvir todos os produtos, toque em Ouvir produtos e preços. Para comprar, toque no botão verde Conversar no WhatsApp e combine direto com quem vende.">
+
+  {# ---------- capa com o nome sobre a foto ---------- #}
+  <header class="loja-capa{% if not b.foto_url %} sem-foto{% endif %}" {% if b.foto_url %}style="--capa:url('{{ b.foto_url }}')"{% else %}style="--capa-cor:{{ b.cor }}"{% endif %}>
+    <a class="voltar" href="{% url 'inicio' %}#tit-lista" aria-label="Voltar para a lista de lojas">←</a>
+    {% if b.foto_url %}<span class="sr-only">Foto da loja {{ b.nome }}</span>{% else %}<i data-lucide="{{ b.icone_categoria }}" class="ic-l capa-icone" aria-hidden="true"></i>{% endif %}
+    <div class="loja-capa-dentro">
+      <span class="loja-cat"><i data-lucide="{{ b.icone_categoria }}" class="ic-l" aria-hidden="true"></i> {{ b.get_categoria_display }}</span>
+      <h1>{{ b.nome }}</h1>
+      <div class="loja-meta">
+        <span><i data-lucide="map-pin" class="ic-l" aria-hidden="true"></i> {{ b.ponto }} • {{ b.bairro }}</span>
+        {% if b.aberta %}<span class="selo aberto">● Aberto agora</span>{% else %}<span class="selo fechado">Fechado agora</span>{% endif %}
+        {% if media %}
+        <a class="nota nota-capa" href="#avaliacoes">
+          <b>{{ media|floatformat:1 }}</b>
+          <span class="estrelas" aria-hidden="true">{% for c in estrelas_media %}<span class="e {{ c }}">★</span>{% endfor %}</span>
+          <span class="nota-n">({{ total_aval }} avaliaç{{ total_aval|pluralize:"ão,ões" }})</span>
+          <span class="sr-only">Nota {{ media|floatformat:1 }} de 5. Ver avaliações.</span>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <div class="loja-corpo">
+    {# ---------- coluna lateral (no celular vira blocos no meio da página) ---------- #}
+    <aside class="loja-lateral" aria-label="Contato e localização">
+      <div class="lateral-card lateral-acoes">
+        <b class="lateral-tit">Fale direto com {{ b.primeiro_nome }}</b>
+        <a class="btn-zap lateral-zap" href="{{ link_zap }}" target="_blank" rel="noopener noreferrer"><i data-lucide="message-circle" class="ic-l" aria-hidden="true"></i> Conversar no WhatsApp</a>
+        <small class="lateral-sem-taxa"><i data-lucide="badge-check" class="ic-l" aria-hidden="true"></i> Negociação direta, sem taxas</small>
+        <button type="button" class="btn-ouvir" id="btn-ouvir" aria-label="Ouvir os produtos e preços em voz alta"><i data-lucide="volume-2" class="ic-l" aria-hidden="true"></i> <span class="ouvir-txt">Ouvir produtos e preços</span></button>
+      </div>
+      <div class="lateral-card lateral-mapa">
+        <b class="lateral-tit"><i data-lucide="map-pin" class="ic-l" aria-hidden="true"></i> Onde fica</b>
+        <div id="mini-mapa" role="region" aria-label="Mapa com a localização da loja {{ b.nome }}"></div>
+        <p class="lateral-end">{{ b.ponto }}<br><span>{{ b.bairro }}, Maceió</span></p>
+        <a class="btn-sec lateral-rota" href="https://www.google.com/maps/dir/?api=1&amp;destination={{ b.latitude|unlocalize }},{{ b.longitude|unlocalize }}" target="_blank" rel="noopener noreferrer"><i data-lucide="navigation" class="ic-l" aria-hidden="true"></i> Como chegar</a>
+      </div>
+    </aside>
+
+    <div class="loja-principal">
+      {# ---------- quem faz: a história em destaque ---------- #}
+      {% if b.historia %}
+      <section class="quem-faz" aria-labelledby="tit-quem">
+        <span class="quem-tag"><i data-lucide="heart-handshake" class="ic-l" aria-hidden="true"></i> Quem faz</span>
+        <h2 id="tit-quem" class="sr-only">Nossa história</h2>
+        <blockquote class="quem-texto"><p>{{ b.historia }}</p></blockquote>
+        <div class="quem-pessoa">
+          <span class="quem-avatar" aria-hidden="true">{{ b.primeiro_nome|first|upper }}</span>
+          <div>
+            <b>{{ b.responsavel_nome }}</b>
+            <small>{{ b.get_categoria_display }} em {{ b.bairro }}</small>
+          </div>
+        </div>
+      </section>
+      {% endif %}
+
+      {# ---------- produtos ---------- #}
+      <section class="loja-produtos" aria-labelledby="tit-prod">
+        <div class="secao-tit"><h2 id="tit-prod">{% if b.categoria == "servicos" %}Serviços{% else %}Produtos{% endif %}</h2><span>preço sem precisar perguntar</span></div>
+        <div class="produtos">
+          {% for p in b.produtos.all %}
+          <div class="prod">
+            {% if p.foto_url %}
+            <img class="img-foto" src="{{ p.foto_url }}" alt="{{ p.nome }}" loading="lazy" width="300" height="300">
+            {% else %}
+            <div class="img" style="background:{{ b.cor }}55" aria-hidden="true"><i data-lucide="package" class="ic-l" aria-hidden="true"></i></div>
+            {% endif %}
+            <div class="corpo">
+              <h3>{{ p.nome }}</h3>
+              {% if p.descricao %}<p class="prod-desc">{{ p.descricao }}</p>{% endif %}
+              <div class="tam">{{ p.tamanho }}</div>
+              <div class="preco">R$ {{ p.preco|floatformat:2 }}</div>
+              <span class="disp {{ p.disponibilidade }}">{{ p.get_disponibilidade_display }}</span>
+            </div>
+          </div>
+          {% empty %}
+          <div class="vazio" style="grid-column:1/-1">Esta loja ainda não cadastrou produtos.</div>
+          {% endfor %}
+        </div>
+      </section>
+
+      {# ---------- avaliações ---------- #}
+      <section class="avaliacoes" id="avaliacoes" aria-labelledby="tit-aval">
+        <div class="secao-tit"><h2 id="tit-aval">Avaliações</h2><span>avaliações fictícias de demonstração</span></div>
+        <div class="aval-grid">
+          <div class="aval-resumo">
+            {% if media %}
+            <div class="aval-media"><b>{{ media|floatformat:1 }}</b><span class="estrelas" aria-hidden="true">{% for c in estrelas_media %}<span class="e {{ c }}">★</span>{% endfor %}</span>
+              <span>{{ total_aval }} avaliaç{{ total_aval|pluralize:"ão,ões" }}</span><span class="sr-only">Nota média {{ media|floatformat:1 }} de 5</span></div>
+            <ul class="barras" aria-label="Quantidade de avaliações por nota">
+              {% for n, q, pct in barras %}
+              <li><span>{{ n }} ★</span><span class="barra" aria-hidden="true"><span style="width:{{ pct }}%"></span></span><span class="barra-q">{{ q }}</span><span class="sr-only">{{ q }} com {{ n }} estrela{{ n|pluralize }}</span></li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <p class="vazio">Ainda ninguém avaliou esta loja. Seja o primeiro!</p>
+            {% endif %}
+
+            {% if not user.is_authenticated %}
+            <div class="caixa form-aval convite-aval">
+              <h3>Comprou aqui? Avalie!</h3>
+              <p class="dica">Para avaliar, entre na sua conta. Cada pessoa avalia uma vez cada loja, e pode mudar a nota depois.</p>
+              {% url 'banca' b.pk as url_banca %}
+              <a class="btn-prim" href="{% url 'login' %}?next={{ url_banca|urlencode }}%23avaliacoes">Entrar para avaliar</a>
+              <a class="btn-sec" href="{% url 'cadastro' %}?next={{ url_banca|urlencode }}%23avaliacoes">Criar conta grátis</a>
+            </div>
+            {% elif eh_dono %}
+            <div class="caixa form-aval convite-aval">
+              <h3>Esta é a sua loja</h3>
+              <p class="dica">Aqui aparecem as avaliações dos seus clientes. Você não pode avaliar a própria loja.</p>
+            </div>
+            {% else %}
+            <form class="caixa form-aval" method="post" action="{% url 'banca' b.pk %}#avaliacoes" novalidate>
+              {% csrf_token %}
+              <h3>{% if minha %}Editar minha avaliação{% else %}Avaliar esta loja{% endif %}</h3>
+              <p class="dica">Avaliando como <b>{{ user.first_name|default:user.username }}</b>{% if minha %} • você avaliou em {{ minha.criada_em|date:"d/m/Y" }}{% endif %}</p>
+              <fieldset class="estrelas-input">
+                <legend>Sua nota</legend>
+                {% for radio in form_aval.nota %}
+                <label class="ei" title="{{ radio.choice_label }}">{{ radio.tag }}<span aria-hidden="true">★</span><span class="sr-only">{{ radio.choice_label }}</span></label>
+                {% endfor %}
+              </fieldset>
+              {{ form_aval.nota.errors }}
+              <div class="campo cheio" style="margin-top:10px"><label for="{{ form_aval.comentario.id_for_label }}">Comentário</label>{{ form_aval.comentario }}{{ form_aval.comentario.errors }}</div>
+              <button class="btn-prim" type="submit">{% if minha %}<i data-lucide="save" class="ic-l" aria-hidden="true"></i> Salvar alteração{% else %}<i data-lucide="star" class="ic-l" aria-hidden="true"></i> Publicar avaliação{% endif %}</button>
+            </form>
+            {% endif %}
+          </div>
+          <ul class="aval-lista">
+            {% for a in avaliacoes %}
+            <li class="aval">
+              <div class="aval-cab">
+                <span class="avatar" aria-hidden="true">{{ a.nome|first|upper }}</span>
+                <div><b>{{ a.nome }}{% if user.is_authenticated and a.autor_id == user.id %} <span class="selo voce">Você</span>{% endif %}</b><small>{{ a.criada_em|date:"d/m/Y" }}</small></div>
+                <span class="estrelas" aria-hidden="true">{% for i in "12345" %}<span class="e {% if forloop.counter <= a.nota %}cheia{% endif %}">★</span>{% endfor %}</span>
+                <span class="sr-only">Nota {{ a.nota }} de 5</span>
+              </div>
+              <p>{{ a.comentario }}</p>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  {# ---------- barra fixa do WhatsApp (só no celular) ---------- #}
+  <div class="barra-zap">
+    <a class="btn-zap" href="{{ link_zap }}" target="_blank" rel="noopener noreferrer"><i data-lucide="message-circle" class="ic-l" aria-hidden="true"></i> Conversar no WhatsApp</a>
+    <div class="sem-taxa">Negociação direta com o vendedor • sem taxas</div>
+  </div>
+</section>
+{{ leitura|json_script:"texto-leitura" }}
+{{ local_json|json_script:"local-loja" }}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function () {
+  // botão Ouvir
+  const btn = document.getElementById('btn-ouvir'); const rotulo = btn.querySelector('.ouvir-txt');
+  const texto = JSON.parse(document.getElementById('texto-leitura').textContent);
+  btn.addEventListener('click', () => {
+    if (btn.classList.contains('falando')) { speechSynthesis.cancel(); btn.classList.remove('falando'); rotulo.textContent = 'Ouvir produtos e preços'; return; }
+    const ok = window.vitrineFala(texto, () => { btn.classList.remove('falando'); rotulo.textContent = 'Ouvir produtos e preços'; });
+    if (ok) { btn.classList.add('falando'); rotulo.textContent = 'Parar'; }
+  });
+
+  // minimapa com a localização da loja
+  const loc = JSON.parse(document.getElementById('local-loja').textContent);
+  if (window.L) {
+    const mapa = L.map('mini-mapa', { zoomControl: false, scrollWheelZoom: false, dragging: !L.Browser.mobile, attributionControl: true })
+      .setView([loc.lat, loc.lng], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(mapa);
+    const icone = L.divIcon({ className: '', html: `<div class="pino" style="background:var(--verde)"><i data-lucide="${loc.icone}" class="ic-l"></i></div>`, iconSize: [36, 36], iconAnchor: [18, 36] });
+    L.marker([loc.lat, loc.lng], { icon: icone, keyboard: false }).addTo(mapa);
+    if (window.lucide) lucide.createIcons();
+  } else {
+    document.getElementById('mini-mapa').textContent = 'Mapa indisponível sem internet.';
+  }
+})();
+</script>
+{% endblock %}

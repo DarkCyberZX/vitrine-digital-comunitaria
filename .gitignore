@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+db.sqlite3
+staticfiles/
+.env
+.vitrine_env
+emails-enviados/
+midia/
+_rascunho-html/
+venv/
+.venv/
+*.zip

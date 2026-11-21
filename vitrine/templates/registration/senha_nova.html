@@ -1,0 +1,33 @@
+{% extends 'vitrine/base.html' %}
+{% block titulo %}Criar senha nova – Vitrine Digital{% endblock %}
+{% block conteudo %}
+<section class="tela login" data-ouvir="Escreva a senha nova duas vezes e toque em Salvar senha.">
+  <div class="marca"><div class="logo" aria-hidden="true"><i data-lucide="lock-keyhole" class="ic-l" aria-hidden="true"></i></div><div><h1>Criar senha nova</h1><small style="color:var(--cinza)">Escolha uma senha que você lembre</small></div></div>
+  {% if validlink %}
+  <form class="caixa" method="post" style="margin:20px 0 0" novalidate>
+    {% csrf_token %}
+    {% for campo in form %}
+    <div class="campo cheio" style="margin-top:12px">
+      <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>{{ campo }}
+      {% if campo.help_text %}<small class="ajuda">{{ campo.help_text|safe }}</small>{% endif %}
+      {{ campo.errors }}
+    </div>
+    {% endfor %}
+    <label class="mostra-senha"><input type="checkbox" class="ver-senha"> Mostrar a senha</label>
+    <button class="btn-prim" type="submit">Salvar senha</button>
+  </form>
+  {% else %}
+  <div class="caixa" style="margin:20px 0 0">
+    <p><b>Este link não vale mais.</b> Ele já foi usado ou passou de 24 horas.</p>
+    <a class="btn-prim" href="{% url 'password_reset' %}" style="display:flex;justify-content:center;align-items:center">Pedir outro link</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('.ver-senha').forEach((c) => c.addEventListener('change', () => {
+  document.querySelectorAll('input[type=password], input[data-senha]').forEach((i) => { i.dataset.senha = '1'; i.type = c.checked ? 'text' : 'password'; });
+}));
+</script>
+{% endblock %}

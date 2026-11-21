@@ -1,0 +1,31 @@
+{% extends 'vitrine/base.html' %}
+{% load static %}
+{% block titulo %}Entrar – Vitrine Digital{% endblock %}
+{% block conteudo %}
+<section class="tela login com-lado" data-ouvir="Esta é a tela de entrar. Escreva seu usuário e sua senha e toque em Entrar. Se não tem conta, toque em Criar conta. Se esqueceu a senha, toque em Esqueci minha senha.">
+  <aside class="conta-lado" style="--foto:url('{% static 'vitrine/fotos/mosaico-2.jpg' %}')"><div class="cl-txt"><img src="{% static 'vitrine/logo.svg' %}" alt="" class="cl-logo"><h2>Que bom ver você por aqui</h2><ul><li><i data-lucide="star" class="ic-l" aria-hidden="true"></i>Avalie as lojas onde você comprou</li><li><i data-lucide="store" class="ic-l" aria-hidden="true"></i>Comerciante: cuide da sua vitrine, preços e fotos</li><li><i data-lucide="shield-check" class="ic-l" aria-hidden="true"></i>Sua senha fica protegida e só você entra na sua conta</li></ul></div></aside>
+  <div class="marca"><div class="logo" aria-hidden="true"><i data-lucide="log-in" class="ic-l" aria-hidden="true"></i></div><div><h1>Entrar</h1><small style="color:var(--cinza)">Para avaliar lojas ou cuidar da sua vitrine</small></div></div>
+  <form class="caixa" method="post" style="margin:20px 0 0">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="erro">Usuário ou senha incorretos.</div>{% endif %}
+    <div class="campo cheio" style="margin-top:8px"><label for="id_username">Usuário</label>{{ form.username }}</div>
+    <div class="campo cheio" style="margin-top:10px"><label for="id_password">Senha</label>{{ form.password }}</div>
+    <label class="mostra-senha"><input type="checkbox" class="ver-senha"> Mostrar a senha</label>
+    <input type="hidden" name="next" value="{{ next }}">
+    <button class="btn-prim" type="submit">Entrar</button>
+    <div class="links-conta">
+      <a href="{% url 'password_reset' %}">Esqueci minha senha</a>
+      <a href="{% url 'cadastro' %}{% if next %}?next={{ next|urlencode }}{% endif %}"><b>Criar conta</b></a>
+    </div>
+  </form>
+  <a class="cl-convite" href="{% url 'cadastro_loja' %}"><span class="aa-ic laranja"><i data-lucide="store" class="ic-l" aria-hidden="true"></i></span><span><b>Vende algo e ainda não tem loja aqui?</b><small>Cadastre sua loja grátis</small></span><i data-lucide="arrow-right" class="ic-l" aria-hidden="true"></i></a>
+  <div class="demo">Protótipo: as contas de demonstração estão descritas no arquivo <b>LEIA-ME.md</b> do projeto.</div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('.ver-senha').forEach((c) => c.addEventListener('change', () => {
+  document.querySelectorAll('input[type=password], input[data-senha]').forEach((i) => { i.dataset.senha = '1'; i.type = c.checked ? 'text' : 'password'; });
+}));
+</script>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends 'vitrine/base.html' %}
+{% load static %}
+{% block titulo %}Minha vitrine – {{ minha.nome }}{% endblock %}
+
+{% block conteudo %}
+<section class="tela tela-painel" data-ouvir="Esta é a sua vitrine. No alto você vê a sua nota, as avaliações, os produtos e as vendas. Para colocar um produto novo, escreva o nome e o preço nos campos, ou, se preferir, toque no microfone laranja e fale, por exemplo: tapioca de queijo, oito reais. Se quiser, coloque uma foto. Depois toque em Colocar na vitrine. Para mudar o preço ou a foto de um produto, toque no lápis ao lado dele. Quando vender, toque em Registrar uma venda e só entregue depois de ver o dinheiro no aplicativo do seu banco.">
+  <div class="ola painel-ola">
+    <div class="ola-linha">
+      <div>
+        <h1 class="ola-tit">Olá, {{ minha.primeiro_nome }}!</h1>
+        <p>{{ minha.nome }} • cadastre digitando ou falando. Fica na vitrine até você mudar.</p>
+      </div>
+      <div class="ola-acoes">
+        <a class="btn-ver-loja contorno" href="{% url 'editar_loja' %}"><i data-lucide="settings" class="ic-l" aria-hidden="true"></i> Dados da loja</a>
+        <a class="btn-ver-loja" href="{% url 'banca' minha.id %}"><i data-lucide="eye" class="ic-l" aria-hidden="true"></i> Ver minha loja</a>
+        <form method="post" action="{% url 'logout' %}" class="so-celular">{% csrf_token %}<button class="sair" type="submit">Sair</button></form>
+      </div>
+    </div>
+  </div>
+
+  <section class="resumo" aria-label="Resumo da sua loja">
+    <div class="res-card">
+      <span class="res-ic amarelo" aria-hidden="true"><i data-lucide="star" class="ic-l"></i></span>
+      <div><b>{% if media %}{{ media|floatformat:1 }}{% else %}–{% endif %}</b>
+        {% if media %}<span class="estrelas" aria-hidden="true">{% for c in estrelas_media %}<span class="e {{ c }}">★</span>{% endfor %}</span>{% endif %}
+        <small>nota dos clientes</small></div>
+    </div>
+    <div class="res-card">
+      <span class="res-ic" aria-hidden="true"><i data-lucide="message-square-text" class="ic-l"></i></span>
+      <div><b>{{ total_aval }}</b><small>avaliaç{{ total_aval|pluralize:"ão,ões" }}</small></div>
+    </div>
+    <div class="res-card">
+      <span class="res-ic" aria-hidden="true"><i data-lucide="tag" class="ic-l"></i></span>
+      <div><b>{{ produtos|length }}</b><small>produto{{ produtos|length|pluralize }} na vitrine</small></div>
+    </div>
+    <div class="res-card">
+      <span class="res-ic laranja" aria-hidden="true"><i data-lucide="shield-check" class="ic-l"></i></span>
+      <div><b>{{ total_vendas }}</b><small>venda{{ total_vendas|pluralize }} conferida{{ total_vendas|pluralize }}</small></div>
+    </div>
+  </section>
+
+  <div class="painel-cols">
+  <div class="painel-col">
+  <form class="caixa caixa-produto{% if editando %} editando{% endif %}" id="form-produto" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="acao" value="produto">
+    {% if editando %}<input type="hidden" name="editar" value="{{ editando.pk }}">{% endif %}
+    <h3>{% if editando %}<i data-lucide="pencil" class="ic-l" aria-hidden="true"></i> Editar “{{ editando.nome }}”{% else %}Colocar produto novo{% endif %}</h3>
+
+    {% if not editando %}
+    <div class="passo-tit"><span class="n">1</span>Fale no microfone <span class="opcional">(ou pule e digite no passo 2)</span></div>
+    <div class="mic-area">
+      <button class="btn-mic" id="btn-mic" type="button" aria-label="Toque e fale o nome do produto e o preço"><i data-lucide="mic" class="ic-l" aria-hidden="true"></i></button>
+      <div class="rotulo" id="mic-rotulo">Toque para falar</div>
+      <div class="exemplo">Fale assim: <i>“tapioca de queijo, oito reais”</i></div>
+      <div class="ouvido" id="ouvido" aria-live="polite">O que você falar aparece aqui</div>
+    </div>
+    {% endif %}
+
+    <div class="passo-tit"><span class="n">{% if editando %}1{% else %}2{% endif %}</span>Escreva ou confira o produto e o preço</div>
+    {{ form.non_field_errors }}
+    <div class="campos">
+      <div class="campo cheio"><label for="{{ form.nome.id_for_label }}">Produto</label>{{ form.nome }}{{ form.nome.errors }}</div>
+      <div class="campo"><label for="{{ form.preco.id_for_label }}">Preço (R$)</label>{{ form.preco }}{{ form.preco.errors }}</div>
+      <div class="campo"><label for="{{ form.tamanho.id_for_label }}">Tamanho <span class="opcional">(se quiser)</span></label>{{ form.tamanho }}{{ form.tamanho.errors }}</div>
+      <div class="campo cheio"><label for="{{ form.descricao.id_for_label }}">Descrição <span class="opcional">(se quiser, até 200 letras)</span></label>{{ form.descricao }}{{ form.descricao.errors }}</div>
+      <div class="campo cheio"><label for="{{ form.disponibilidade.id_for_label }}">Tem para entregar agora?</label>{{ form.disponibilidade }}</div>
+    </div>
+    {{ form.cadastrado_por_voz }}
+
+    <div class="passo-tit"><span class="n">{% if editando %}2{% else %}3{% endif %}</span>Foto do produto <span class="opcional">(se quiser)</span></div>
+    <label class="foto-envio" for="{{ form.imagem.id_for_label }}">
+      <span class="foto-previa{% if editando and editando.foto_url %} tem{% endif %}" id="foto-previa"{% if editando and editando.foto_url %} style="background-image:url('{{ editando.foto_url }}')"{% endif %}>
+        <i data-lucide="camera" class="ic-l" aria-hidden="true"></i>
+      </span>
+      <span class="foto-txt"><b id="foto-nome">{% if editando and editando.foto_url %}Trocar a foto{% else %}Tirar ou escolher uma foto{% endif %}</b>
+        <small>Perto da janela, com luz do dia, sobre um fundo liso. JPG ou PNG até 5 MB.</small></span>
+    </label>
+    {{ form.imagem }}{{ form.imagem.errors }}
+    {% if editando and editando.foto_url %}<label class="toggle tirar-foto"><input type="checkbox" name="tirar_foto" value="1"> Tirar a foto deste produto</label>{% endif %}
+
+    <div class="passo-tit"><span class="n">{% if editando %}3{% else %}4{% endif %}</span>{% if editando %}Salve as mudanças{% else %}Coloque na vitrine{% endif %}</div>
+    <button class="btn-prim" type="submit"><i data-lucide="check" class="ic-l" aria-hidden="true"></i> {% if editando %}Salvar mudanças{% else %}Colocar na vitrine{% endif %}</button>
+    {% if editando %}<a class="btn-sec btn-cancela" href="{% url 'painel' %}">Cancelar</a>{% endif %}
+    <div class="fixo"><i data-lucide="pin" class="ic-l" aria-hidden="true"></i> Catálogo fixo: não precisa postar todo dia.</div>
+  </form>
+
+  <div class="pix-card">
+    <h3><i data-lucide="shield-check" class="ic-l" aria-hidden="true"></i> Vendeu? Confira antes de entregar</h3>
+    <p>Só entregue o produto depois de olhar o saldo <b>direto no app do seu banco</b>. Comprovante enviado por foto pode ser falso.</p>
+    <button class="btn-prim" id="btn-vendi" type="button" style="background:var(--alerta)">Registrar uma venda</button>
+    {% if vendas %}<div class="vendas">Últimas vendas conferidas: {% for v in vendas %}{{ v.registrada_em|date:"d/m H:i" }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>{% endif %}
+  </div>
+  </div>
+  <div class="painel-col">
+  <div class="caixa">
+    <h3>Minha vitrine</h3>
+    <div class="dica">O que os clientes estão vendo agora. Toque no lápis para mudar o preço ou a foto.</div>
+    <div class="meus">
+      {% for p in produtos %}
+      <div class="meu{% if editando and editando.pk == p.pk %} atual{% endif %}">
+        {% if p.foto_url %}<img class="mini" src="{{ p.foto_url }}" alt="">{% else %}<span class="e" aria-hidden="true"><i data-lucide="package" class="ic-l" aria-hidden="true"></i></span>{% endif %}
+        <div class="t"><b>{{ p.nome }}{% if p.cadastrado_por_voz %} <span class="selo-voz" title="Cadastrado por voz"><i data-lucide="mic" class="ic-l" aria-hidden="true"></i><span class="sr-only">cadastrado por voz</span></span>{% endif %}</b><span>{{ p.tamanho }} • {{ p.get_disponibilidade_display }}</span>{% if p.descricao %}<span class="meu-desc">{{ p.descricao|truncatechars:70 }}</span>{% endif %}<span class="p">R$ {{ p.preco|floatformat:2 }}</span></div>
+        <a class="lapis" href="{% url 'painel' %}?editar={{ p.pk }}#form-produto" aria-label="Editar {{ p.nome }}"><i data-lucide="pencil" class="ic-l" aria-hidden="true"></i></a>
+        <form method="post" action="{% url 'remover_produto' p.pk %}" class="form-tirar">{% csrf_token %}<button class="x" type="submit" aria-label="Tirar {{ p.nome }} da vitrine"><i data-lucide="trash-2" class="ic-l" aria-hidden="true"></i></button></form>
+      </div>
+      {% empty %}
+      <div class="vazio">Nenhum produto ainda. Use o microfone ou digite os dados.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="caixa">
+    <h3>O que os clientes dizem</h3>
+    {% for a in recentes %}
+    <figure class="aval-mini">
+      <div class="aval-mini-cab"><b>{{ a.nome }}</b><span class="estrelas" aria-hidden="true">{% for i in "12345" %}<span class="e {% if forloop.counter <= a.nota %}cheia{% endif %}">★</span>{% endfor %}</span><span class="sr-only">Nota {{ a.nota }} de 5</span><small>{{ a.criada_em|date:"d/m" }}</small></div>
+      <blockquote>{{ a.comentario }}</blockquote>
+    </figure>
+    {% empty %}
+    <div class="dica">Ainda sem avaliações. Peça para seus clientes avaliarem a sua loja na Vitrine.</div>
+    {% endfor %}
+    {% if total_aval > 3 %}<a class="ver-todas" href="{% url 'banca' minha.id %}">Ver todas as {{ total_aval }} avaliações →</a>{% endif %}
+  </div>
+
+  <form class="caixa" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="acao" value="historia">
+    <h3><label for="{{ hist_form.historia.id_for_label }}">Minha história</label></h3>
+    <div class="dica">Conte quem você é e como faz seus produtos.</div>
+    <div class="campo cheio" style="margin-top:10px">{{ hist_form.historia }}</div>
+    <label class="toggle">{{ hist_form.aberta }} Estou aberta(o) agora</label>
+    <button class="btn-sec" type="submit">Salvar</button>
+  </form>
+
+  </div>
+  </div>
+</section>
+
+<div class="modal-fundo" id="modal-pix" role="dialog" aria-modal="true" aria-labelledby="pix-tit">
+  <form class="modal" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="acao" value="venda">
+    <div class="icone"><i data-lucide="shield-check" class="ic-l" aria-hidden="true"></i></div>
+    <h3 id="pix-tit">Antes de entregar, confira o Pix</h3>
+    <p>Golpistas mandam comprovante falso por foto. O único jeito seguro é olhar o saldo no aplicativo do seu banco.</p>
+    <div class="passos">
+      <div class="passo"><span class="n">1</span><div>Abra o <b>app do seu banco</b>.</div></div>
+      <div class="passo"><span class="n">2</span><div>Veja se o valor <b>já entrou no extrato</b>.</div></div>
+      <div class="passo"><span class="n">3</span><div>Só então <b>entregue o produto</b>.</div></div>
+    </div>
+    <label class="check">{{ venda_form.conferiu_no_banco }} Conferi no app do banco e o dinheiro entrou</label>
+    <button class="btn-prim" id="pix-confirma" type="submit" disabled>Confirmar entrega</button>
+    <button class="btn-sec" id="pix-fecha" type="button">Ainda não entrou</button>
+  </form>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'vitrine/painel.js' %}?v=2"></script>{% endblock %}

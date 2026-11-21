@@ -1,0 +1,13 @@
+{% extends 'vitrine/base.html' %}
+{% block titulo %}Confira seu e-mail – Vitrine Digital{% endblock %}
+{% block conteudo %}
+<section class="tela login" data-ouvir="Se o e-mail estiver cadastrado, mandamos um link para criar uma senha nova. Abra o e-mail e toque no link. Ele vale por 24 horas.">
+  <div class="marca"><div class="logo" aria-hidden="true"><i data-lucide="mail-check" class="ic-l" aria-hidden="true"></i></div><div><h1>Confira seu e-mail</h1><small style="color:var(--cinza)">Se o e-mail estiver cadastrado, o link chegou</small></div></div>
+  <div class="caixa" style="margin:20px 0 0">
+    <p>Se existir uma conta com esse e-mail, mandamos um link para você criar uma senha nova. <b>O link vale por 24 horas.</b></p>
+    <p class="dica" style="margin-top:10px">Não chegou? Olhe a caixa de spam ou fale com a Vitrine pelo WhatsApp.</p>
+    <p class="demo" style="margin-top:12px">Protótipo: nenhum e-mail é enviado de verdade. O e-mail aparece no terminal do servidor (localhost) ou na pasta <b>emails-enviados</b> (site publicado).</p>
+    <a class="btn-prim" href="{% url 'login' %}" style="display:flex;justify-content:center;align-items:center">Voltar para Entrar</a>
+  </div>
+</section>
+{% endblock %}

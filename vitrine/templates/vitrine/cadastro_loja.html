@@ -1,0 +1,100 @@
+{% extends 'vitrine/base.html' %}
+{% load static %}
+{% block titulo %}{% if editando %}Dados da minha loja{% else %}Cadastrar minha loja{% endif %} – Vitrine Digital{% endblock %}
+{% block cabeca %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">{% endblock %}
+
+{% block conteudo %}
+<section class="tela tela-cad-loja" data-ouvir="{% if editando %}Aqui você muda os dados da sua loja. Depois toque em Salvar.{% else %}Aqui você cadastra a sua loja, de graça. Primeiro crie a sua conta com nome, usuário e senha. Depois escreva o nome da loja, o que você vende e o seu WhatsApp. Em seguida, marque no mapa onde fica a loja: toque no mapa ou no botão Usar onde estou. Foto e história são opcionais. No fim, toque em Cadastrar minha loja.{% endif %}">
+  <header class="cl-topo">
+    <span class="ajuda-selo"><i data-lucide="store" class="ic-l" aria-hidden="true"></i> {% if editando %}Minha loja{% else %}Para quem vende{% endif %}</span>
+    <h1>{% if editando %}Dados da minha loja{% else %}Cadastre a sua loja{% endif %}</h1>
+    {% if not editando %}
+    <p>Grátis e sem taxa: a sua loja aparece no mapa assim que você terminar.</p>
+    <ul class="cl-vantagens">
+      <li><i data-lucide="clock-3" class="ic-l" aria-hidden="true"></i> Leva uns 3 minutos</li>
+      <li><i data-lucide="hand-coins" class="ic-l" aria-hidden="true"></i> Sem taxa nem comissão</li>
+      <li><i data-lucide="message-circle" class="ic-l" aria-hidden="true"></i> Clientes chamam no seu WhatsApp</li>
+    </ul>
+    {% endif %}
+  </header>
+
+  <form class="cl-form" method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {% if loja.non_field_errors or conta.non_field_errors %}<div class="erro" role="alert">{{ loja.non_field_errors|join:" " }} {{ conta.non_field_errors|join:" " }}</div>{% endif %}
+
+    {% if conta %}
+    <fieldset class="cl-passo">
+      <legend><span class="ap-n">1</span> Sua conta <small>para entrar depois e cuidar da loja</small></legend>
+      <div class="cl-campos">
+        {% for campo in conta %}
+        <div class="campo{% if campo.name == 'email' %} cheio{% endif %}">
+          <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>{{ campo }}
+          {% if campo.help_text %}<small class="ajuda">{{ campo.help_text|safe }}</small>{% endif %}
+          {{ campo.errors }}
+        </div>
+        {% endfor %}
+      </div>
+      <label class="mostra-senha"><input type="checkbox" class="ver-senha"> Mostrar a senha</label>
+      <p class="cl-ja">Já tem conta? <a href="{% url 'login' %}?next={% url 'cadastro_loja' %}">Entre primeiro</a> e volte aqui.</p>
+    </fieldset>
+    {% endif %}
+
+    <fieldset class="cl-passo">
+      <legend><span class="ap-n">{% if conta %}2{% else %}1{% endif %}</span> Sua loja</legend>
+      <div class="cl-campos">
+        <div class="campo"><label for="{{ loja.nome.id_for_label }}">{{ loja.nome.label }}</label>{{ loja.nome }}{{ loja.nome.errors }}</div>
+        <div class="campo"><label for="{{ loja.responsavel.id_for_label }}">{{ loja.responsavel.label }}</label>{{ loja.responsavel }}{{ loja.responsavel.errors }}</div>
+      </div>
+      <div class="campo cheio" role="radiogroup" aria-labelledby="rot-cat">
+        <span class="rot" id="rot-cat">{{ loja.categoria.label }}</span>
+        <div class="cl-cats">
+          {% for v, n, ic in categorias %}
+          <label class="cl-cat"><input type="radio" name="{{ loja.categoria.html_name }}" value="{{ v }}"{% if loja.categoria.value == v %} checked{% endif %} required>
+            <span><i data-lucide="{{ ic }}" class="ic-l" aria-hidden="true"></i>{{ n }}</span></label>
+          {% endfor %}
+        </div>
+        {{ loja.categoria.errors }}
+      </div>
+      <div class="campo cheio"><label for="{{ loja.whatsapp.id_for_label }}">{{ loja.whatsapp.label }}</label>{{ loja.whatsapp }}<small class="ajuda">{{ loja.whatsapp.help_text }}</small>{{ loja.whatsapp.errors }}</div>
+    </fieldset>
+
+    <fieldset class="cl-passo">
+      <legend><span class="ap-n">{% if conta %}3{% else %}2{% endif %}</span> Onde fica</legend>
+      <div class="cl-campos">
+        <div class="campo"><label for="{{ loja.cep.id_for_label }}">CEP <span class="opcional">(se souber, a gente completa o resto)</span></label>{{ loja.cep }}{{ loja.cep.errors }}
+          <small class="cl-cep-msg" id="cl-cep-msg" aria-live="polite"></small></div>
+        <div class="campo"><label for="{{ loja.bairro.id_for_label }}">Bairro</label>{{ loja.bairro }}{{ loja.bairro.errors }}
+          <datalist id="lista-bairros">{% for b in bairros %}<option value="{{ b }}">{% endfor %}</datalist></div>
+        <div class="campo cheio"><label for="{{ loja.ponto.id_for_label }}">{{ loja.ponto.label }}</label>{{ loja.ponto }}{{ loja.ponto.errors }}</div>
+      </div>
+      <div class="cl-mapa-cab">
+        <span class="rot" id="rot-mapa">Marque no mapa <small>toque no lugar da loja ou arraste o marcador</small></span>
+        <button type="button" class="btn-gps" id="cl-gps"><i data-lucide="locate-fixed" class="ic-l" aria-hidden="true"></i> Usar onde estou</button>
+      </div>
+      <div id="cl-mapa" class="cl-mapa" role="application" aria-labelledby="rot-mapa"></div>
+      <p class="cl-mapa-ok" id="cl-mapa-ok" aria-live="polite">{% if loja.latitude.value %}Local marcado.{% else %}Ainda não marcado.{% endif %}</p>
+      {{ loja.latitude }}{{ loja.longitude }}
+      {{ loja.latitude.errors }}
+    </fieldset>
+
+    <fieldset class="cl-passo">
+      <legend><span class="ap-n">{% if conta %}4{% else %}3{% endif %}</span> Foto e história <small>opcional, dá para fazer depois</small></legend>
+      <label class="foto-envio" for="{{ loja.capa.id_for_label }}">
+        <span class="foto-previa{% if editando and minha.foto_url %} tem{% endif %}" id="cl-previa"{% if editando and minha.foto_url %} style="background-image:url('{{ minha.foto_url }}')"{% endif %}><i data-lucide="camera" class="ic-l" aria-hidden="true"></i></span>
+        <span class="foto-txt"><b id="cl-foto-nome">{% if editando and minha.foto_url %}Trocar a foto da loja{% else %}Tirar ou escolher a foto da loja{% endif %}</b><small>A foto aparece na capa da sua loja. JPG ou PNG até 5 MB.</small></span>
+      </label>
+      {{ loja.capa }}{{ loja.capa.errors }}
+      <div class="campo cheio" style="margin-top:14px"><label for="{{ loja.historia.id_for_label }}">{{ loja.historia.label }}</label>{{ loja.historia }}<small class="ajuda">{{ loja.historia.help_text }}</small></div>
+    </fieldset>
+
+    <button class="btn-prim cl-enviar" type="submit"><i data-lucide="check" class="ic-l" aria-hidden="true"></i> {% if editando %}Salvar{% else %}Cadastrar minha loja{% endif %}</button>
+    {% if editando %}<a class="btn-sec btn-cancela" href="{% url 'painel' %}">Cancelar</a>{% else %}
+    <p class="cl-aviso"><i data-lucide="shield-check" class="ic-l" aria-hidden="true"></i> Ao cadastrar, você confirma que a loja é sua. Lojas falsas ou com conteúdo ofensivo podem ser retiradas do site.</p>{% endif %}
+  </form>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="{% static 'vitrine/cadastro_loja.js' %}?v=1"></script>
+{% endblock %}
