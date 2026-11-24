@@ -71,7 +71,7 @@ Sem essas variáveis, o comando sorteia senhas e mostra no terminal.
 python manage.py test vitrine
 ```
 
-São 44 testes automáticos: login e permissões (um comerciante não mexe na loja de outro), cadastro da loja, envio de fotos,
+São 47 testes automáticos: login e permissões (um comerciante não mexe na loja de outro), cadastro da loja, envio de fotos,
 avaliações, recuperação de senha e o link "Como chegar".
 
 ## Publicar
