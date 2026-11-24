@@ -3,7 +3,7 @@
 {% block titulo %}Minha vitrine – {{ minha.nome }}{% endblock %}
 
 {% block conteudo %}
-<section class="tela tela-painel" data-ouvir="Esta é a sua vitrine. No alto você vê a sua nota, as avaliações e os produtos. Para colocar um produto novo, escreva o nome e o preço nos campos, ou, se preferir, toque no microfone laranja e fale, por exemplo: tapioca de queijo, oito reais. Se quiser, coloque uma foto. Depois toque em Colocar na vitrine. Para mudar o preço ou a foto de um produto, toque no lápis ao lado dele. Quando vender pelo WhatsApp, só entregue depois de ver o dinheiro no aplicativo do seu banco: comprovante por foto pode ser falso.">
+<section class="tela tela-painel" data-ouvir="Esta é a sua vitrine. No alto você vê a sua nota, as avaliações e os produtos. Para colocar um produto novo, escreva o nome e o preço nos campos, ou, se preferir, toque no microfone laranja e fale do seu jeito, por exemplo: bolo de macaxeira, meio quilo, quinze reais. A descrição também tem um botão Falar. Se quiser, coloque uma foto. Depois toque em Colocar na vitrine. Para mudar o preço ou a foto de um produto, toque no lápis ao lado dele. Quando vender pelo WhatsApp, só entregue depois de ver o dinheiro no aplicativo do seu banco: comprovante por foto pode ser falso.">
   <div class="ola painel-ola">
     <div class="ola-linha">
       <div>
@@ -46,9 +46,9 @@
     {% if not editando %}
     <div class="passo-tit"><span class="n">1</span>Fale no microfone <span class="opcional">(ou pule e digite no passo 2)</span></div>
     <div class="mic-area">
-      <button class="btn-mic" id="btn-mic" type="button" aria-label="Toque e fale o nome do produto e o preço"><i data-lucide="mic" class="ic-l" aria-hidden="true"></i></button>
+      <button class="btn-mic" id="btn-mic" type="button" aria-label="Toque e fale o produto, o tamanho e o preço"><i data-lucide="mic" class="ic-l" aria-hidden="true"></i></button>
       <div class="rotulo" id="mic-rotulo">Toque para falar</div>
-      <div class="exemplo">Fale assim: <i>“tapioca de queijo, oito reais”</i></div>
+      <div class="exemplo">Fale do seu jeito, por exemplo: <i>“bolo de macaxeira, meio quilo, quinze reais”</i></div>
       <div class="ouvido" id="ouvido" aria-live="polite">O que você falar aparece aqui</div>
     </div>
     {% endif %}
@@ -59,7 +59,7 @@
       <div class="campo cheio"><label for="{{ form.nome.id_for_label }}">Produto</label>{{ form.nome }}{{ form.nome.errors }}</div>
       <div class="campo"><label for="{{ form.preco.id_for_label }}">Preço (R$)</label>{{ form.preco }}{{ form.preco.errors }}</div>
       <div class="campo"><label for="{{ form.tamanho.id_for_label }}">Tamanho <span class="opcional">(se quiser)</span></label>{{ form.tamanho }}{{ form.tamanho.errors }}</div>
-      <div class="campo cheio"><label for="{{ form.descricao.id_for_label }}">Descrição <span class="opcional">(se quiser, até 200 letras)</span></label>{{ form.descricao }}{{ form.descricao.errors }}</div>
+      <div class="campo cheio"><div class="desc-cab"><label for="{{ form.descricao.id_for_label }}">Descrição <span class="opcional">(se quiser, até 200 letras)</span></label><button type="button" class="btn-mic-mini" id="btn-mic-desc" aria-pressed="false" aria-label="Falar a descrição"><i data-lucide="mic" class="ic-l" aria-hidden="true"></i> Falar</button></div>{{ form.descricao }}{{ form.descricao.errors }}</div>
       <div class="campo cheio"><label for="{{ form.disponibilidade.id_for_label }}">Tem para entregar agora?</label>{{ form.disponibilidade }}</div>
     </div>
     {{ form.cadastrado_por_voz }}
@@ -138,4 +138,4 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 {% endblock %}
 
-{% block scripts %}<script src="{% static 'vitrine/painel.js' %}?v=3"></script>{% endblock %}
+{% block scripts %}<script src="{% static 'vitrine/painel.js' %}?v=5"></script>{% endblock %}

@@ -1234,3 +1234,11 @@ html.trava-rolagem,html.trava-rolagem body{overflow:hidden}
 .end-linha input:focus-visible{outline:3px solid var(--laranja);outline-offset:2px}
 .app.contraste .end-linha input{border:2px solid #000}
 .voce.ajusta{width:28px;height:28px;border-width:4px;cursor:grab;box-shadow:0 0 0 8px rgba(37,99,235,.25),0 2px 6px rgba(0,0,0,.35)}
+/* microfone da descrição */
+.desc-cab{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.btn-mic-mini{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:999px;border:2px solid var(--laranja);background:#fff;color:#9a3412;font-weight:800;font-size:14px}
+.btn-mic-mini .ic-l{width:18px;height:18px}
+.btn-mic-mini.ouvindo{background:var(--laranja);color:#fff}
+.btn-mic-mini:focus-visible{outline:3px solid var(--verde-esc);outline-offset:2px}
+.app.contraste .btn-mic-mini{border-color:#000;color:#000}
+.app.contraste .btn-mic-mini.ouvindo{background:#000;color:#fff}
