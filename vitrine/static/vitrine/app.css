@@ -1226,3 +1226,10 @@ html.trava-rolagem,html.trava-rolagem body{overflow:hidden}
 .cl-etapas li{padding:6px 12px;border-radius:99px;background:#eef2f1;color:#374151}
 .cl-etapas li.atual{background:var(--verde);color:#fff;font-weight:800}
 .cl-etapas li.feita{background:#d1fae5;color:#065f46}
+
+/* endereço ou CEP no lugar do GPS */
+.end-rot{font-size:14px;font-weight:800;color:#374151;margin:12px 0 4px}
+.end-linha{display:flex;gap:8px}
+.end-linha input{flex:1;min-width:0;border:1.5px solid #858f9e;border-radius:10px;padding:10px 12px;font-size:16px;min-height:44px;background:#fff}
+.end-linha input:focus-visible{outline:3px solid var(--laranja);outline-offset:2px}
+.app.contraste .end-linha input{border:2px solid #000}

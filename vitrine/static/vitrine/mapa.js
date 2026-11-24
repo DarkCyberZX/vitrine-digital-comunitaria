@@ -275,7 +275,7 @@
   function esqueceLocal() {
     perto = null; origem = '';
     if (marcaVoce) { marcaVoce.remove(); marcaVoce = null; }
-    status.textContent = 'Compartilhe sua localização para ver a distância até cada loja.'; status.classList.remove('ok'); dicaKm.hidden = false;
+    status.textContent = 'Use sua localização ou digite um endereço para ver a distância até cada loja.'; status.classList.remove('ok'); dicaKm.hidden = false;
   }
   function pedeGps(rolar) {
     // sem permissão (ou se o GPS falhar): não inventa um lugar; pede o endereço ou o CEP
@@ -283,7 +283,7 @@
       status.textContent = negou ? 'Você não compartilhou sua localização, então a distância não aparece.' : 'Não conseguimos achar sua localização agora. Tente de novo.';
       status.classList.remove('ok');
       if ($('#f-ordem').value === 'perto') { $('#f-ordem').value = 'nota'; desenha(); }
-      toast(negou ? 'Sem a localização, a distância não aparece' : 'Não conseguimos achar sua localização');
+      toast(negou ? 'Sem a localização: digite um endereço ou CEP nos filtros' : 'Não conseguimos achar sua localização');
     };
     if (!navigator.geolocation) return semLocal(false);
     status.textContent = 'Procurando onde você está…';
@@ -295,6 +295,42 @@
   // escolher "Mais perto de mim" sem ter dado a localização: pede a localização
   $('#f-ordem').addEventListener('change', () => { if ($('#f-ordem').value === 'perto' && !perto) pedeGps(false); });
   $('#btn-gps').addEventListener('click', () => pedeGps(true));
+
+  // ---------- ou um endereço / CEP digitado (sem GPS) ----------
+  const campoEnd = $('#f-endereco');
+  async function usaEndereco() {
+    const txt = campoEnd.value.trim();
+    if (txt.length < 3) { status.textContent = 'Digite o nome da rua, do bairro ou o CEP.'; status.classList.remove('ok'); campoEnd.focus(); return; }
+    // se não achar, não deixa valendo um endereço antigo
+    const falha = (msg) => { if (perto) { esqueceLocal(); if ($('#f-ordem').value === 'perto') $('#f-ordem').value = 'nota'; desenha(); } status.textContent = msg; };
+    status.classList.remove('ok'); status.textContent = 'Procurando o endereço…';
+    const q = new URLSearchParams({ format: 'json', limit: '1', countrycodes: 'br' });
+    let nome = txt;
+    const d = txt.replace(/\D/g, '');
+    try {
+      if (/^\s*\d{5}-?\d{3}\s*$/.test(txt)) {
+        const e = await (await fetch(`https://viacep.com.br/ws/${d}/json/`)).json();
+        if (e.erro) { falha('CEP não encontrado. Confira os números.'); return; }
+        if (e.localidade !== 'Maceió') { falha(`Esse CEP é de ${e.localidade}. A Vitrine, por enquanto, é só de Maceió.`); return; }
+        nome = [e.logradouro, e.bairro].filter(Boolean).join(', ') || txt;
+        q.set('q', [e.logradouro, e.bairro, 'Maceió, Alagoas'].filter(Boolean).join(', '));
+      } else {
+        q.set('q', /macei[oó]/i.test(txt) ? txt : `${txt}, Maceió, Alagoas`);
+      }
+      // só aceita resultados dentro de Maceió
+      q.set('viewbox', '-35.85,-9.40,-35.60,-9.75'); q.set('bounded', '1');
+      const [achou] = await (await fetch('https://nominatim.openstreetmap.org/search?' + q, { headers: { 'Accept-Language': 'pt-BR' } })).json();
+      if (!achou) { falha('Não achamos esse endereço em Maceió. Tente o nome da rua com o bairro, ou o CEP.'); return; }
+      fechaFiltrosSePrecisar();
+      usaLocal(parseFloat(achou.lat), parseFloat(achou.lon), `Usando o endereço: ${nome}.`, true);
+      toast('Mostrando a distância a partir desse endereço');
+    } catch (err) {
+      falha('Não deu para procurar o endereço agora. Tente de novo.');
+    }
+  }
+  function fechaFiltrosSePrecisar() { const f = $('#filtros-fechar'); if (f && window.innerWidth < 768 && f.offsetParent) f.click(); }
+  $('#f-endereco-ok').addEventListener('click', usaEndereco);
+  campoEnd.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); usaEndereco(); } });
   $('#f-gps').addEventListener('click', () => pedeGps(false));
 
 

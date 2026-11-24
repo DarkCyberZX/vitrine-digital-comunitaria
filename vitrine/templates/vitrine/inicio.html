@@ -64,6 +64,11 @@
           <fieldset class="f-grupo f-local"><legend class="f-tit">Sua localização</legend>
             <p class="local-status" id="local-status" aria-live="polite">Compartilhe sua localização para ver a distância até cada loja.</p>
             <button type="button" class="btn-local" id="f-gps"><i data-lucide="locate-fixed" class="ic-l" aria-hidden="true"></i> Usar minha localização</button>
+            <label class="end-rot" for="f-endereco">Ou digite um endereço ou CEP</label>
+            <div class="end-linha">
+              <input id="f-endereco" type="text" inputmode="text" autocomplete="street-address" placeholder="Ex.: Rua Durval Guimarães ou 57035-060">
+              <button type="button" class="btn-local-ok" id="f-endereco-ok">Usar</button>
+            </div>
           </fieldset>
           <fieldset class="f-grupo" id="f-km-grupo"><legend class="f-tit">Distância máxima</legend>
             <label class="f-op"><input type="radio" name="km" value="" checked> Qualquer distância</label>
@@ -71,7 +76,7 @@
             <label class="f-op"><input type="radio" name="km" value="2"> Até 2 km</label>
             <label class="f-op"><input type="radio" name="km" value="5"> Até 5 km</label>
             <label class="f-op"><input type="radio" name="km" value="10"> Até 10 km</label>
-            <small class="f-dica" id="f-km-dica">Funciona depois que você compartilha sua localização.</small>
+            <small class="f-dica" id="f-km-dica">Funciona depois que você usa a sua localização ou um endereço.</small>
           </fieldset>
           <fieldset class="f-grupo"><legend class="f-tit">Categoria</legend>
             {% for valor, nome, icone, qtd in categorias %}<label class="f-op"><input type="checkbox" name="cat" value="{{ valor }}"> <i data-lucide="{{ icone }}" class="ic-l" aria-hidden="true"></i> {{ nome }} <span class="f-qtd">{{ qtd }}</span></label>{% endfor %}
@@ -225,6 +230,6 @@
 {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
-<script src="{% static 'vitrine/mapa.js' %}?v=25"></script>
+<script src="{% static 'vitrine/mapa.js' %}?v=27"></script>
 <script src="{% static 'vitrine/numeros.js' %}?v=1"></script>
 {% endblock %}
