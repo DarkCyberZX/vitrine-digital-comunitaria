@@ -160,4 +160,6 @@ class Command(BaseCommand):
             for nome, nota, comentario in AVALIACOES.get(usuario, []):
                 Avaliacao.objects.create(banca=banca, nome=nome, nota=nota, comentario=comentario)
 
+        from django.core.management import call_command
+        call_command('preencher_horarios', stdout=self.stdout)
         self.stdout.write(self.style.SUCCESS(f'{len(BANCAS)} lojas de demonstração prontas.'))

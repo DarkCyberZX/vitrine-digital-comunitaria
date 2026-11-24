@@ -1,3 +1,4 @@
+import os
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
@@ -359,3 +360,15 @@ class DescricaoProdutoTests(TestCase):
         r = self.client.post(reverse('painel'), {'acao': 'produto', 'p-nome': 'Cocada', 'p-preco': '4', 'p-tamanho': 'unidade',
                                                  'p-disponibilidade': 'pronta', 'p-descricao': 'x' * 201})
         self.assertFalse(Produto.objects.filter(nome='Cocada').exists())
+
+
+class PreencherHorariosTests(TestCase):
+    def test_preenche_so_quem_nao_tem_horario(self):
+        from datetime import time
+        from django.core.management import call_command
+        a = cria_banca('ana'); b = cria_banca('bia')
+        b.dias, b.abre, b.fecha = Banca.Dias.FDS, time(10), time(12); b.save()
+        call_command('preencher_horarios', stdout=open(os.devnull, 'w'))
+        a.refresh_from_db(); b.refresh_from_db()
+        self.assertTrue(a.horario_texto)
+        self.assertEqual((b.abre, b.fecha), (time(10), time(12)))  # não mexe em quem já tem
