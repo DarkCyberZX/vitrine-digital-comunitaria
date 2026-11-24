@@ -94,6 +94,24 @@
     return { nome, tamanho, preco };
   }
 
+  // a pessoa pode desligar a voz que repete o que ela falou (a escolha fica guardada no aparelho)
+  const ecoLigado = () => { try { return localStorage.getItem('vitrine-eco') !== '0'; } catch (e) { return true; } };
+  const btnEco = $('#btn-eco');
+  function mostraEco() {
+    if (!btnEco) return;
+    const on = ecoLigado();
+    btnEco.setAttribute('aria-pressed', String(on));
+    btnEco.querySelector('span').textContent = `Repetir em voz alta: ${on ? 'ligado' : 'desligado'}`;
+    btnEco.querySelector('i, svg')?.setAttribute('data-lucide', on ? 'volume-2' : 'volume-x');
+    if (window.lucide) window.lucide.createIcons();
+  }
+  if (btnEco) btnEco.addEventListener('click', () => {
+    try { localStorage.setItem('vitrine-eco', ecoLigado() ? '0' : '1'); } catch (e) { /* sem armazenamento: só nesta tela */ }
+    if (!ecoLigado() && window.speechSynthesis) speechSynthesis.cancel();
+    mostraEco();
+  });
+  mostraEco();
+
   const reaisTxt = (v) => v.toFixed(2).replace('.', ',');
   function preenche(frase) {
     const o = $('#ouvido'); o.textContent = '“' + frase + '”'; o.classList.add('tem');
@@ -104,7 +122,7 @@
     campoVoz.value = 'True';
     toast(r.preco != null ? 'Entendi! Confira e coloque na vitrine' : 'Entendi o produto. Falta o preço');
     // repete em voz alta o que entendeu, para quem tem dificuldade de leitura
-    if (window.vitrineFala) {
+    if (window.vitrineFala && ecoLigado()) {
       const tam = r.tamanho ? `, ${r.tamanho.replace(/(\d) g$/, '$1 gramas').replace(/(\d) kg$/, '$1 quilo').replace(/(\d) ml$/, '$1 mililitros').replace(/(\d) L$/, '$1 litro')}` : '';
       const preco = r.preco != null ? `, ${reaisTxt(r.preco)} reais` : '. Faltou o preço, fale de novo';
       window.vitrineFala(`Entendi: ${r.nome}${tam}${preco}. Se estiver certo, toque em colocar na vitrine.`);
@@ -156,7 +174,7 @@
     ouvir(btnDesc, null, (t) => {
       campoDesc.value = junta(t); campoVoz.value = 'True';
       toast('Descrição preenchida. Confira o texto');
-      if (window.vitrineFala) window.vitrineFala(`Escrevi: ${campoDesc.value}`);
+      if (window.vitrineFala && ecoLigado()) window.vitrineFala(`Escrevi: ${campoDesc.value}`);
     }, (t) => { campoDesc.value = junta(t); });
   });
 

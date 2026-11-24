@@ -72,6 +72,7 @@
       <div class="rotulo" id="mic-rotulo">Toque para falar</div>
       <div class="exemplo">Fale do seu jeito, por exemplo: <i>“bolo de macaxeira, meio quilo, quinze reais”</i></div>
       <div class="ouvido" id="ouvido" aria-live="polite">O que você falar aparece aqui</div>
+      <button type="button" class="btn-eco" id="btn-eco" aria-pressed="true"><i data-lucide="volume-2" class="ic-l" aria-hidden="true"></i> <span>Repetir em voz alta: ligado</span></button>
     </div>
     {% endif %}
 
@@ -140,4 +141,4 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 {% endblock %}
 
-{% block scripts %}<script src="{% static 'vitrine/painel.js' %}?v=10"></script>{% endblock %}
+{% block scripts %}<script src="{% static 'vitrine/painel.js' %}?v=11"></script>{% endblock %}

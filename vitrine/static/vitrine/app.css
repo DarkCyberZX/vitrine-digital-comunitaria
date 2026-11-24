@@ -1287,3 +1287,11 @@ html.trava-rolagem,html.trava-rolagem body{overflow:hidden}
 .end-linha .btn-local-ok{width:100%}
 .btn-marcar{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%}
 .btn-marcar .ic-l{width:18px;height:18px}
+
+/* liga/desliga a voz que repete o que a pessoa falou */
+.btn-eco{display:inline-flex;align-items:center;gap:6px;margin:10px auto 0;min-height:40px;padding:0 14px;border-radius:999px;border:1.5px solid #858f9e;background:#fff;color:#1f2937;font-weight:700;font-size:14px}
+.btn-eco .ic-l{width:18px;height:18px}
+.btn-eco[aria-pressed="false"]{color:#4b5563;border-style:dashed}
+.btn-eco:focus-visible{outline:3px solid var(--laranja);outline-offset:2px}
+.mic-area{display:flex;flex-direction:column;align-items:center}
+.app.contraste .btn-eco{border-color:#000;color:#000}
