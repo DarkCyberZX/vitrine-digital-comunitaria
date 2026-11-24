@@ -1276,3 +1276,9 @@ html.trava-rolagem,html.trava-rolagem body{overflow:hidden}
 .app.contraste .cl-dif{border-color:#000}
 .app.contraste .cl-dif summary{color:#000}
 .cl-passo .cl-dif summary{font-size:15.5px}
+/* topo do painel: minha história e aviso do Pix */
+.painel-topo{display:grid;gap:16px;margin:0 0 16px}
+.painel-topo>.caixa,.painel-topo>.pix-card{margin:0}
+@media (min-width:900px){.painel-topo{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch}}
+.painel-topo{margin:12px 12px 0}
+@media (min-width:768px){.painel-topo{margin:12px 8px 4px}}

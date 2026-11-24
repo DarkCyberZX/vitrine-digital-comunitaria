@@ -35,6 +35,28 @@
     </div>
   </section>
 
+  <div class="painel-topo">
+  <form class="caixa caixa-historia" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="acao" value="historia">
+    <h3><label for="{{ hist_form.historia.id_for_label }}">Minha história</label></h3>
+    <div class="dica">Conte quem você é e como faz seus produtos.</div>
+    <div class="campo cheio" style="margin-top:10px">{{ hist_form.historia }}</div>
+    <label class="toggle">{{ hist_form.aberta }} Estou aberta(o) agora</label>
+    <button class="btn-sec" type="submit">Salvar</button>
+  </form>
+
+  <aside class="pix-card" aria-labelledby="pix-tit">
+    <h3 id="pix-tit"><i data-lucide="shield-check" class="ic-l" aria-hidden="true"></i> Vendeu pelo WhatsApp? Confira o Pix antes de entregar</h3>
+    <p>Golpistas mandam comprovante falso por foto. O único jeito seguro é olhar o saldo no aplicativo do seu banco.</p>
+    <ol class="pix-passos">
+      <li><span class="n" aria-hidden="true">1</span><span>Abra o <b>app do seu banco</b>.</span></li>
+      <li><span class="n" aria-hidden="true">2</span><span>Veja se o valor <b>já entrou no extrato</b>.</span></li>
+      <li><span class="n" aria-hidden="true">3</span><span>Só então <b>entregue o produto</b>.</span></li>
+    </ol>
+  </aside>
+  </div>
+
   <div class="painel-cols">
   <div class="painel-col">
   <form class="caixa caixa-produto{% if editando %} editando{% endif %}" id="form-produto" method="post" enctype="multipart/form-data" novalidate>
@@ -79,16 +101,6 @@
     <button class="btn-prim" type="submit"><i data-lucide="check" class="ic-l" aria-hidden="true"></i> {% if editando %}Salvar mudanças{% else %}Colocar na vitrine{% endif %}</button>
     {% if editando %}<a class="btn-sec btn-cancela" href="{% url 'painel' %}">Cancelar</a>{% endif %}
   </form>
-
-  <aside class="pix-card" aria-labelledby="pix-tit">
-    <h3 id="pix-tit"><i data-lucide="shield-check" class="ic-l" aria-hidden="true"></i> Vendeu pelo WhatsApp? Confira o Pix antes de entregar</h3>
-    <p>Golpistas mandam comprovante falso por foto. O único jeito seguro é olhar o saldo no aplicativo do seu banco.</p>
-    <ol class="pix-passos">
-      <li><span class="n" aria-hidden="true">1</span><span>Abra o <b>app do seu banco</b>.</span></li>
-      <li><span class="n" aria-hidden="true">2</span><span>Veja se o valor <b>já entrou no extrato</b>.</span></li>
-      <li><span class="n" aria-hidden="true">3</span><span>Só então <b>entregue o produto</b>.</span></li>
-    </ol>
-  </aside>
   </div>
   <div class="painel-col">
   <div class="caixa">
@@ -120,16 +132,6 @@
     {% endfor %}
     {% if total_aval > 3 %}<a class="ver-todas" href="{% url 'banca' minha.id %}">Ver todas as {{ total_aval }} avaliações →</a>{% endif %}
   </div>
-
-  <form class="caixa" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="acao" value="historia">
-    <h3><label for="{{ hist_form.historia.id_for_label }}">Minha história</label></h3>
-    <div class="dica">Conte quem você é e como faz seus produtos.</div>
-    <div class="campo cheio" style="margin-top:10px">{{ hist_form.historia }}</div>
-    <label class="toggle">{{ hist_form.aberta }} Estou aberta(o) agora</label>
-    <button class="btn-sec" type="submit">Salvar</button>
-  </form>
 
   </div>
   </div>
