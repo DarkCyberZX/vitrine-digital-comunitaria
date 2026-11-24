@@ -34,7 +34,14 @@
 
   const N = '(\\d+(?:[.,]\\d+)?)';
   // tamanho: só quando vem com uma unidade conhecida (sem unidade, não chuta)
+  const num = (s) => parseFloat(String(s).replace(',', '.'));
+  const virgula = (v) => String(+v.toFixed(3)).replace('.', ',');
   const TAMANHOS = [
+    // compostos: "1 kg e 600 g" -> 1,6 kg; "um quilo e meio" -> 1,5 kg; "1 litro e 500 ml" -> 1,5 L
+    [new RegExp(N + '\\s*(?:quilos?|kg|quilogramas?)\\s+e\\s+' + N + '\\s*(?:gramas?|g)\\b'), (m) => `${virgula(num(m[1]) + num(m[2]) / 1000)} kg`],
+    [new RegExp(N + '\\s*(?:quilos?|kg|quilogramas?)\\s+e\\s+meio\\b'), (m) => `${virgula(num(m[1]) + 0.5)} kg`],
+    [new RegExp(N + '\\s*(?:litros?|l)\\s+e\\s+' + N + '\\s*(?:ml|mililitros?)\\b'), (m) => `${virgula(num(m[1]) + num(m[2]) / 1000)} L`],
+    [new RegExp(N + '\\s*litros?\\s+e\\s+meio\\b'), (m) => `${virgula(num(m[1]) + 0.5)} L`],
     [/\bmeio\s+(quilo|kg)\b/, () => '500 g'],
     [/\bmeio\s+litro\b/, () => '500 ml'],
     [/\bmeia\s+d[uú]zia\b/, () => 'meia dúzia'],
