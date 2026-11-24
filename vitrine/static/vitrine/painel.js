@@ -53,7 +53,9 @@
   // Entende a frase em qualquer ordem: "bolo de macaxeira, 500 gramas, quinze reais"
   // | "quinze reais o bolo de macaxeira de meio quilo" | "cocada 4,50"
   function interpreta(frase) {
-    let f = ' ' + numerosPorExtenso(frase.toLowerCase().replace(/r\$\s*/g, '').replace(/[!?;]/g, ' ').replace(/\s+/g, ' ').trim()) + ' ';
+    // o Chrome costuma escrever "quinze reais" como "R$ 15" ou "R$ 15,50": vira "15,50 reais"
+    const t = frase.toLowerCase().replace(/r\$\s*(\d+(?:[.,]\d+)?)/g, ' $1 reais ').replace(/r\$/g, ' ');
+    let f = ' ' + numerosPorExtenso(t.replace(/[!?;]/g, ' ').replace(/\s+/g, ' ').trim()) + ' ';
     let preco = null, tamanho = '';
     // preço: o número que vem com "reais" (e, se tiver, os centavos)
     const p = f.match(new RegExp('(?:\\s(?:por|custa|a)\\s+)?' + N + '\\s*(?:reais|real|contos?)(?:\\s+e\\s+(\\d+)(?:\\s*centavos?)?)?'));
