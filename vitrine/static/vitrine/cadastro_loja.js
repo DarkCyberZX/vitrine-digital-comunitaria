@@ -11,6 +11,18 @@
 
   if (!lat) return; // etapa 1 (só a conta): não tem mapa nem foto
 
+  // horário diferente: mostra só as linhas dos dias marcados
+  const linhasDif = document.querySelectorAll('.cl-dif-linha');
+  function mostraDias() {
+    linhasDif.forEach((l) => {
+      const caixa = document.querySelector(`input[name="l-dias"][value="${l.dataset.dia}"]`);
+      const temValor = [...l.querySelectorAll('input')].some((i) => i.value);
+      l.hidden = !(caixa && caixa.checked) && !temValor;
+    });
+  }
+  document.querySelectorAll('input[name="l-dias"]').forEach((c) => c.addEventListener('change', mostraDias));
+  mostraDias();
+
   // prévia da foto da loja
   const foto = $('#id_l-capa');
   if (foto) foto.addEventListener('change', () => {
@@ -66,15 +78,20 @@
     }
   }
   async function vaiParaRua(e, d) {
-    const q = new URLSearchParams({ format: 'json', limit: '1', city: 'Maceió', state: 'Alagoas', country: 'Brasil' });
-    if (e.logradouro) q.set('street', e.logradouro); else q.set('postalcode', d);
+    // procura a rua dentro do bairro do CEP (há ruas com o mesmo nome em bairros diferentes)
+    const procura = async (texto) => {
+      const q = new URLSearchParams({ format: 'json', limit: '1', countrycodes: 'br', q: texto, viewbox: '-35.85,-9.40,-35.60,-9.75', bounded: '1' });
+      return (await (await fetch('https://nominatim.openstreetmap.org/search?' + q, { headers: { 'Accept-Language': 'pt-BR' } })).json())[0];
+    };
     try {
-      const r = await fetch('https://nominatim.openstreetmap.org/search?' + q, { headers: { 'Accept-Language': 'pt-BR' } });
-      const [achou] = await r.json();
+      let achou = e.logradouro ? await procura([e.logradouro, e.bairro, 'Maceió, Alagoas'].filter(Boolean).join(', ')) : null;
+      let msg = 'Levamos o mapa até a sua rua. Arraste o marcador até a porta da loja.', zoom = 17;
+      // o mapa aberto não tem todas as ruas: cai no centro do bairro
+      if (!achou && e.bairro) { achou = await procura(`${e.bairro}, Maceió, Alagoas`); msg = `O mapa não tem essa rua, então levamos até o bairro ${e.bairro}. Arraste o marcador até a porta da loja.`; zoom = 16; }
       if (!achou) { fala('Não achamos a rua no mapa. Toque no mapa no lugar da loja.'); return; }
       const p = { lat: parseFloat(achou.lat), lng: parseFloat(achou.lon) };
-      mapa.setView([p.lat, p.lng], 17);
-      marca(p, 'Levamos o mapa até a sua rua. Arraste o marcador até a porta da loja.');
+      mapa.setView([p.lat, p.lng], zoom);
+      marca(p, msg);
     } catch (err) { fala('Toque no mapa no lugar da loja.'); }
   }
 

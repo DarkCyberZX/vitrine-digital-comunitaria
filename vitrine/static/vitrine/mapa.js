@@ -313,7 +313,7 @@
     const falha = (msg) => { if (perto) { esqueceLocal(); if ($('#f-ordem').value === 'perto') $('#f-ordem').value = 'nota'; desenha(); } status.textContent = msg; };
     status.classList.remove('ok'); status.textContent = 'Procurando o endereço…';
     const q = new URLSearchParams({ format: 'json', limit: '1', countrycodes: 'br' });
-    let nome = txt;
+    let nome = txt, bairroCep = '';
     const cep = txt.match(/\b\d{5}-?\d{3}\b/), d = cep ? cep[0].replace('-', '') : '';
     const numero = (cep ? txt.replace(cep[0], '') : '').match(/\d+/);
     try {
@@ -324,6 +324,7 @@
         nome = [e.logradouro, e.bairro].filter(Boolean).join(', ') || txt;
         q.set('q', [e.logradouro && numero ? `${e.logradouro}, ${numero[0]}` : e.logradouro, e.bairro, 'Maceió, Alagoas'].filter(Boolean).join(', '));
         if (numero) nome = `${e.logradouro}, ${numero[0]} (${e.bairro})`;
+        bairroCep = e.bairro || '';
       } else {
         q.set('q', /macei[oó]/i.test(txt) ? txt : `${txt}, Maceió, Alagoas`);
       }
@@ -333,11 +334,15 @@
       let achou = await procura();
       // o mapa nem sempre conhece o número da casa: tenta de novo só com a rua
       if (!achou && /,\s*\d+/.test(q.get('q'))) { q.set('q', q.get('q').replace(/,\s*\d+\b/, '')); achou = await procura(); }
+      // o mapa aberto não tem todas as ruas: com o CEP, cai no centro do bairro (nunca numa rua de mesmo nome em outro bairro)
+      if (!achou && bairroCep) { q.set('q', `${bairroCep}, Maceió, Alagoas`); achou = await procura(); if (achou) { nome = `bairro ${bairroCep}`; achou.addresstype = 'suburb'; } }
       if (!achou) { falha('Não achamos esse endereço em Maceió. Tente o nome da rua com o bairro, ou o CEP.'); return; }
       fechaFiltrosSePrecisar();
       // achou a casa pelo número: ponto exato; senão é um ponto da rua ou do bairro, e a pessoa ajusta
       const exato = achou.addresstype === 'house' || achou.type === 'house' || achou.class === 'building';
+      const soBairro = nome.startsWith('bairro ');
       usaLocal(parseFloat(achou.lat), parseFloat(achou.lon), exato ? `Usando o endereço: ${nome}.`
+        : soBairro ? `O mapa não tem essa rua, então usamos o centro do ${nome}. Arraste o marcador azul (ou toque no mapa) até onde você está.`
         : `Usando o endereço: ${nome}. O ponto é aproximado: arraste o marcador azul (ou toque no mapa) até onde você está.`, true, true);
       toast('Mostrando a distância a partir desse endereço');
     } catch (err) {

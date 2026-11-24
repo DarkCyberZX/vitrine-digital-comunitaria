@@ -73,6 +73,16 @@
           <div class="campo"><label for="{{ loja.abre.id_for_label }}">Abre às</label>{{ loja.abre }}{{ loja.abre.errors }}</div>
           <div class="campo"><label for="{{ loja.fecha.id_for_label }}">Fecha às</label>{{ loja.fecha }}{{ loja.fecha.errors }}</div>
         </div>
+        <details class="cl-dif"{% if loja.tem_horario_dif %} open{% endif %}>
+          <summary>O horário muda em algum dia?</summary>
+          <p class="ajuda">Preencha só os dias com horário diferente. Ex.: sábado, das 7h às 12h.</p>
+          {% for cod, nome, abre, fecha in loja.linhas_dif %}
+          <div class="cl-dif-linha" data-dia="{{ cod }}">
+            <span class="cl-dif-dia">{{ nome }}</span>{{ abre }}<span class="cl-dif-as" aria-hidden="true">às</span>{{ fecha }}
+            {% if abre.errors or fecha.errors %}<div class="cl-dif-erro">{{ abre.errors }}{{ fecha.errors }}</div>{% endif %}
+          </div>
+          {% endfor %}
+        </details>
         <small class="ajuda">Aparece na página da sua loja para o cliente saber quando você está lá.</small>
       </fieldset>
     </fieldset>
@@ -116,5 +126,5 @@
 
 {% block scripts %}
 {% if loja %}<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="{% static 'vitrine/cadastro_loja.js' %}?v=2"></script>{% else %}<script src="{% static 'vitrine/cadastro_loja.js' %}?v=2"></script>{% endif %}
+<script src="{% static 'vitrine/cadastro_loja.js' %}?v=4"></script>{% else %}<script src="{% static 'vitrine/cadastro_loja.js' %}?v=4"></script>{% endif %}
 {% endblock %}

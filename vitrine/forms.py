@@ -175,6 +175,16 @@ class LojaForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # horário diferente em alguns dias: um "abre/fecha" opcional para cada dia da semana
+        especiais = self.instance.horarios_dia or {}
+        for cod, nome in Banca.DIAS_SEMANA:
+            for i, campo in enumerate(('abre', 'fecha')):
+                rot = f'{nome}: {"abre" if i == 0 else "fecha"} às'
+                self.fields[f'{campo}_{cod}'] = forms.TimeField(
+                    required=False, label=rot,
+                    widget=forms.TimeInput(attrs={'type': 'time', 'aria-label': rot}, format='%H:%M'))
+                if not self.is_bound and cod in especiais:
+                    self.initial[f'{campo}_{cod}'] = especiais[cod][i]
         self.fields['categoria'].choices = list(Banca.Categoria.choices)  # sem a opção vazia "-----"
         if not self.is_bound and self.instance.dias:
             self.initial['dias'] = self.instance.dias.split(',')
@@ -208,10 +218,37 @@ class LojaForm(forms.ModelForm):
             self.add_error('fecha', 'A hora de fechar precisa ser diferente da hora de abrir.')
         if abre and fecha and not dados.get('dias'):
             self.add_error('dias', 'Marque os dias em que a loja abre.')
+        # dias com horário diferente
+        marcados = (dados.get('dias') or '').split(',')
+        self._horarios_dia = {}
+        for cod, nome in Banca.DIAS_SEMANA:
+            a, f = dados.get(f'abre_{cod}'), dados.get(f'fecha_{cod}')
+            if not a and not f:
+                continue
+            if bool(a) != bool(f):
+                self.add_error(f'fecha_{cod}' if a else f'abre_{cod}', f'{nome}: coloque a hora que abre e a que fecha.')
+            elif a == f:
+                self.add_error(f'fecha_{cod}', f'{nome}: a hora de fechar precisa ser diferente.')
+            elif cod not in marcados:
+                self.add_error(f'abre_{cod}', f'Marque {nome.lower()} nos dias que abre.')
+            elif (a, f) != (abre, fecha):  # igual ao horário normal não precisa guardar
+                self._horarios_dia[cod] = [a.strftime('%H:%M'), f.strftime('%H:%M')]
         return dados
 
     def clean_capa(self):
         return confere_foto(self.cleaned_data.get('capa'))
+
+    def linhas_dif(self):
+        """Para a tela: (código, nome, campo abre, campo fecha) de cada dia."""
+        return [(cod, nome, self[f'abre_{cod}'], self[f'fecha_{cod}']) for cod, nome in Banca.DIAS_SEMANA]
+
+    def tem_horario_dif(self):
+        return bool(self.instance.horarios_dia) or any(
+            self[f'{c}_{d}'].value() for d, _ in Banca.DIAS_SEMANA for c in ('abre', 'fecha'))
+
+    def save(self, commit=True):
+        self.instance.horarios_dia = getattr(self, '_horarios_dia', self.instance.horarios_dia or {})
+        return super().save(commit)
 
     def clean_cep(self):
         d = ''.join(c for c in self.cleaned_data.get('cep', '') if c.isdigit())

@@ -42,6 +42,8 @@ class Banca(models.Model):
         FDS = 'sab,dom'
 
     dias = models.CharField('dias que abre', max_length=30, blank=True)
+    # dias com horário diferente do normal, ex.: {'sab': ['07:00', '12:00']}
+    horarios_dia = models.JSONField('horário diferente em alguns dias', default=dict, blank=True)
     abre = models.TimeField('abre às', null=True, blank=True)
     fecha = models.TimeField('fecha às', null=True, blank=True)
     aberta = models.BooleanField('aberta agora', default=True)
@@ -71,14 +73,14 @@ class Banca(models.Model):
     def responsavel_nome(self):
         return self.responsavel.split(',')[0].strip()
 
-    @property
-    def dias_texto(self):
-        """'Terça a sábado', 'Segunda, quarta e sexta', 'Todos os dias'..."""
-        codigos = [c for c, _ in self.DIAS_SEMANA]
-        marcados = [i for i, c in enumerate(codigos) if c in (self.dias or '').split(',')]
+    @classmethod
+    def texto_dos_dias(cls, codigos_marcados):
+        """['ter','qua','qui','sex','sab'] -> 'Terça a sábado'; ['seg','qua','sex'] -> 'Segunda, quarta e sexta'."""
+        codigos = [c for c, _ in cls.DIAS_SEMANA]
+        nomes = [n for _, n in cls.DIAS_SEMANA]
+        marcados = [i for i, c in enumerate(codigos) if c in codigos_marcados]
         if not marcados:
             return ''
-        nomes = [n for _, n in self.DIAS_SEMANA]
         if len(marcados) == 7:
             return 'Todos os dias'
         seguidos = marcados == list(range(marcados[0], marcados[-1] + 1))
@@ -88,15 +90,35 @@ class Banca(models.Model):
         return lista[0] if len(lista) == 1 else ', '.join(lista[:-1]) + ' e ' + lista[-1]
 
     @property
+    def dias_texto(self):
+        return self.texto_dos_dias((self.dias or '').split(','))
+
+    @property
     def horario_texto(self):
-        """Ex.: 'Segunda a sábado, das 7h às 18h30'. Vazio se o comerciante não informou."""
-        hora = lambda h: f'{h.hour}h' + (f'{h.minute:02d}' if h.minute else '')
+        """Ex.: 'Terça a sexta, das 7h às 18h; sábado, das 7h às 12h'. Vazio se o comerciante não informou."""
+        def hora(h):
+            hh, mm = (h.hour, h.minute) if hasattr(h, 'hour') else map(int, h.split(':'))
+            return f'{hh}h' + (f'{mm:02d}' if mm else '')
+
+        def faixa(a, f):
+            return f'das {hora(a)} às {hora(f)}' if a and f else ''
+
+        marcados = [c for c, _ in self.DIAS_SEMANA if c in (self.dias or '').split(',')]
+        especiais = {d: h for d, h in (self.horarios_dia or {}).items() if d in marcados and h and len(h) == 2}
+        # agrupa os dias pelo horário: primeiro o horário normal, depois os diferentes
+        grupos = {}
+        normais = [d for d in marcados if d not in especiais]
+        if normais or not marcados:
+            grupos[faixa(self.abre, self.fecha)] = normais
+        for d in marcados:
+            if d in especiais:
+                grupos.setdefault(faixa(*especiais[d]), []).append(d)
         partes = []
-        if self.dias_texto:
-            partes.append(self.dias_texto)
-        if self.abre and self.fecha:
-            partes.append(f'das {hora(self.abre)} às {hora(self.fecha)}')
-        return ', '.join(partes)
+        for k, (hor, dias) in enumerate(grupos.items()):
+            txt = ', '.join(p for p in (self.texto_dos_dias(dias), hor) if p)
+            if txt:
+                partes.append(txt if not partes else txt[0].lower() + txt[1:])
+        return '; '.join(partes)
 
     @property
     def icone_categoria(self):
