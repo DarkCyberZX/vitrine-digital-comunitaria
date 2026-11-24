@@ -1,7 +1,7 @@
 {% autoescape off %}Olá{% if user.first_name %}, {{ user.first_name }}{% endif %}!
 
 Alguém pediu para trocar a senha da sua conta na Vitrine Digital Comunitária.
-Seu usuário é: {{ user.get_username }}
+Você entra com: {{ user.get_username }}
 
 Para criar uma senha nova, abra este link (vale por 24 horas):
 {{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}

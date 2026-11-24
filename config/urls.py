@@ -4,11 +4,11 @@ from django.conf import settings
 from django.views.static import serve
 from django.urls import re_path, include, path
 
-from vitrine.forms import EsqueciSenhaForm, NovaSenhaForm
+from vitrine.forms import EntrarForm, EsqueciSenhaForm, NovaSenhaForm
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('entrar/', auth_views.LoginView.as_view(redirect_authenticated_user=True), name='login'),
+    path('entrar/', auth_views.LoginView.as_view(redirect_authenticated_user=True, authentication_form=EntrarForm), name='login'),
     path('sair/', auth_views.LogoutView.as_view(), name='logout'),
     path('senha/esqueci/', auth_views.PasswordResetView.as_view(
         template_name='registration/senha_esqueci.html',

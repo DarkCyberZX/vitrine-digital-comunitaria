@@ -2,9 +2,9 @@
 {% load static %}
 {% block titulo %}Criar conta – Vitrine Digital{% endblock %}
 {% block conteudo %}
-<section class="tela login com-lado" data-ouvir="Esta é a tela de criar conta. Escreva seu nome, escolha um usuário e uma senha. O e-mail é opcional e serve só para recuperar a senha. Depois toque em Criar conta.">
+<section class="tela login com-lado" data-ouvir="Esta é a tela de criar conta. Escreva seu nome, seu e-mail e uma senha. Depois toque em Criar conta.">
   <aside class="conta-lado" style="--foto:url('{% static 'vitrine/fotos/mosaico-3.jpg' %}')"><div class="cl-txt"><img src="{% static 'vitrine/logo.svg' %}" alt="" class="cl-logo"><h2>Uma conta, em menos de 1 minuto</h2><ul><li><i data-lucide="user-round" class="ic-l" aria-hidden="true"></i>Só nome, usuário e senha. E-mail é opcional</li><li><i data-lucide="star" class="ic-l" aria-hidden="true"></i>Avalie e ajude seus vizinhos a escolher onde comprar</li><li><i data-lucide="scale" class="ic-l" aria-hidden="true"></i>Uma avaliação por loja: notas justas para todo mundo</li></ul></div></aside>
-  <div class="marca"><div class="logo" aria-hidden="true"><i data-lucide="user-plus" class="ic-l" aria-hidden="true"></i></div><div><h1>Criar conta</h1><small style="color:var(--cinza)">Rapidinho: só nome, usuário e senha</small></div></div>
+  <div class="marca"><div class="logo" aria-hidden="true"><i data-lucide="user-plus" class="ic-l" aria-hidden="true"></i></div><div><h1>Criar conta</h1><small style="color:var(--cinza)">Rapidinho: só nome, e-mail e senha</small></div></div>
   <form class="caixa" method="post" style="margin:20px 0 0" novalidate>
     {% csrf_token %}
     {{ form.non_field_errors }}

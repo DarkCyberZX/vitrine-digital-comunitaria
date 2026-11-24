@@ -1,6 +1,7 @@
 from django import forms
-from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, SetPasswordForm, UserCreationForm
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 from .models import Avaliacao, Banca, Produto
 
@@ -76,17 +77,16 @@ class AvaliacaoForm(forms.ModelForm):
 
 
 class CadastroForm(UserCreationForm):
-    """Cadastro curto do cliente: nome, usuário e senha."""
+    """Cadastro curto: nome, e-mail e senha. O e-mail é o login (não mandamos código para confirmar)."""
     first_name = forms.CharField(label='Seu nome', max_length=40,
                                  widget=forms.TextInput(attrs={'autocomplete': 'given-name', 'placeholder': 'Ex.: Maria'}))
+    email = forms.EmailField(label='Seu e-mail', max_length=150,
+                             help_text='É com ele que você entra na conta e recupera a senha.',
+                             widget=forms.EmailInput(attrs={'autocomplete': 'email', 'placeholder': 'Ex.: maria@gmail.com'}))
 
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ['first_name', 'username', 'email']
-        labels = {'username': 'Usuário', 'email': 'E-mail (opcional)'}
-        widgets = {'email': forms.EmailInput(attrs={'autocomplete': 'email'})}
-        help_texts = {'username': 'Só letras, números e @ . + - _ (sem espaço). Ex.: maria.silva',
-                      'email': 'Serve só para recuperar a senha se você esquecer.'}
+        fields = ['first_name', 'email']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -97,9 +97,25 @@ class CadastroForm(UserCreationForm):
 
     def clean_email(self):
         email = self.cleaned_data.get('email', '').strip().lower()
-        if email and User.objects.filter(email__iexact=email).exists():
-            raise forms.ValidationError('Já existe uma conta com este e-mail.')
+        if User.objects.filter(Q(email__iexact=email) | Q(username__iexact=email)).exists():
+            raise forms.ValidationError('Já existe uma conta com este e-mail. Toque em Entrar.')
         return email
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.username = self.cleaned_data['email']  # o Django exige um usuário: usamos o próprio e-mail
+        if commit:
+            user.save()
+        return user
+
+
+class EntrarForm(AuthenticationForm):
+    """Entrar com o e-mail (contas antigas ainda entram com o usuário)."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].label = 'E-mail'
+        self.fields['username'].widget.attrs.update({'autocomplete': 'email', 'inputmode': 'email',
+                                                     'autocapitalize': 'none', 'placeholder': 'O e-mail da sua conta'})
 
 
 class EsqueciSenhaForm(PasswordResetForm):
