@@ -63,9 +63,11 @@
     // o Chrome costuma escrever "quinze reais" como "R$ 15" ou "R$ 15,50": vira "15,50 reais"
     // e o Edge escreve "80 BRL" ou "BRL 80" (o código da moeda)
     const t = frase.toLowerCase()
-      .replace(/r\$\s*(\d+(?:[.,]\d+)?)/g, ' $1 reais ').replace(/\bbrl\s*(\d+(?:[.,]\d+)?)/g, ' $1 reais ')
-      .replace(/(\d+(?:[.,]\d+)?)\s*brl\b/g, ' $1 reais ').replace(/r\$|\bbrl\b/g, ' ');
-    let f = ' ' + numerosPorExtenso(t.replace(/[!?;]/g, ' ').replace(/\s+/g, ' ').trim()) + ' ';
+      // primeiro o "800 BRL" (número antes); só depois o "BRL 12", senão em "800 BRL 400 g" o 400 virava preço
+      .replace(/r\$\s*(\d+(?:[.,]\d+)?)/g, ' $1 reais ').replace(/(\d+(?:[.,]\d+)?)\s*brl\b/g, ' $1 reais ')
+      .replace(/\bbrl\s*(\d+(?:[.,]\d+)?)/g, ' $1 reais ').replace(/r\$|\bbrl\b/g, ' ');
+    // tira pontuação solta (o ponto final do Edge), mas mantém o ponto de números como "4.50"
+    let f = ' ' + numerosPorExtenso(t.replace(/[!?;:]/g, ' ').replace(/\.(?!\d)|(?<!\d)\./g, ' ').replace(/\s+/g, ' ').trim()) + ' ';
     let preco = null, tamanho = '';
     // preço: o número que vem com "reais" (e, se tiver, os centavos)
     const p = f.match(new RegExp('(?:\\s(?:por|custa|a)\\s+)?' + N + '\\s*(?:reais|real|contos?)(?:\\s+e\\s+(\\d+)(?:\\s*centavos?)?)?'));
