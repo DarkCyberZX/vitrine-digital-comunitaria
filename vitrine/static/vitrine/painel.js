@@ -52,6 +52,9 @@
     [new RegExp(N + '\\s*d[uú]zias?\\b'), (m) => (m[1] === '1' ? '1 dúzia' : `${m[1]} dúzias`)],
     [new RegExp(N + '\\s*(cm|cent[ií]metros?)\\b'), (m) => `${m[1]} cm`],
     [new RegExp(N + '\\s*metros?\\b'), (m) => `${m[1]} m`],
+    // "tamanho grande", "tamanho médio", "tamanho extra grande", "tamanho família"...
+    [/\btamanho\s+(extra\s*grande|extra\s*g|super\s*grande|grand[ãa]o|grande|m[eé]dio|pequeno|mini|fam[ií]lia|individual)\b/,
+      (m) => { const p = m[1].replace(/\s+/g, ' '); const t = { 'extra g': 'extra grande', 'grandao': 'grandão', 'medio': 'médio', 'familia': 'família' }[p] || p; return t.charAt(0).toUpperCase() + t.slice(1); }],
     [/\btamanho\s+(pp|p|m|g|gg|xg|[uú]nico)\b/, (m) => `Tamanho ${m[1].toUpperCase().replace('ÚNICO', 'único').replace('UNICO', 'único')}`],
     [/\b(?:n[uú]mero|n[º°o])\s*(\d{2})\b/, (m) => `Nº ${m[1]}`],
     [/\b(?:a|por)\s+unidade\b|\bunidade\b/, () => 'unidade'],
