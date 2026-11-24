@@ -1242,3 +1242,7 @@ html.trava-rolagem,html.trava-rolagem body{overflow:hidden}
 .btn-mic-mini:focus-visible{outline:3px solid var(--verde-esc);outline-offset:2px}
 .app.contraste .btn-mic-mini{border-color:#000;color:#000}
 .app.contraste .btn-mic-mini.ouvindo{background:#000;color:#fff}
+/* o bloco de localização não pode ficar mais largo que a coluna de filtros */
+.f-grupo{min-width:0}
+.end-linha input{width:100%}
+.btn-local{white-space:normal;text-align:center}
