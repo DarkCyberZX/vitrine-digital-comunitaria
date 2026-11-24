@@ -1282,3 +1282,8 @@ html.trava-rolagem,html.trava-rolagem body{overflow:hidden}
 @media (min-width:900px){.painel-topo{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch}}
 .painel-topo{margin:12px 12px 0}
 @media (min-width:768px){.painel-topo{margin:12px 8px 4px}}
+/* endereço: campo com a largura toda e o botão embaixo (a coluna de filtros é estreita) */
+.end-linha{flex-direction:column;align-items:stretch}
+.end-linha .btn-local-ok{width:100%}
+.btn-marcar{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.btn-marcar .ic-l{width:18px;height:18px}

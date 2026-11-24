@@ -67,8 +67,10 @@
             <label class="end-rot" for="f-endereco">Ou digite um endereço ou CEP</label>
             <div class="end-linha">
               <input id="f-endereco" type="text" inputmode="text" autocomplete="street-address" placeholder="Rua, bairro ou CEP">
-              <button type="button" class="btn-local-ok" id="f-endereco-ok">Usar</button>
+              <button type="button" class="btn-local-ok" id="f-endereco-ok">Usar este endereço</button>
             </div>
+            <span class="end-rot">Ou marque você mesmo</span>
+            <button type="button" class="btn-local-ok btn-marcar" id="f-marcar"><i data-lucide="map-pin" class="ic-l" aria-hidden="true"></i> Marcar no mapa</button>
           </fieldset>
           <fieldset class="f-grupo" id="f-km-grupo"><legend class="f-tit">Distância máxima</legend>
             <label class="f-op"><input type="radio" name="km" value="" checked> Qualquer distância</label>
@@ -230,6 +232,6 @@
 {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
-<script src="{% static 'vitrine/mapa.js' %}?v=30"></script>
+<script src="{% static 'vitrine/mapa.js' %}?v=31"></script>
 <script src="{% static 'vitrine/numeros.js' %}?v=1"></script>
 {% endblock %}

@@ -353,6 +353,16 @@
   $('#f-endereco-ok').addEventListener('click', usaEndereco);
   campoEnd.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); usaEndereco(); } });
   $('#f-gps').addEventListener('click', () => pedeGps(false));
+  // sem GPS e sem endereço: põe o marcador no meio do mapa para a pessoa arrastar ou tocar onde está
+  const btnMarcar = $('#f-marcar');
+  if (btnMarcar) btnMarcar.addEventListener('click', () => {
+    if (!mapa) { status.textContent = 'O mapa não carregou. Tente digitar o endereço.'; return; }
+    const c = perto ? L.latLng(perto.lat, perto.lng) : mapa.getCenter();
+    fechaFiltrosSePrecisar();
+    usaLocal(c.lat, c.lng, 'Arraste o marcador azul (ou toque no mapa) até onde você está. As distâncias mudam na hora.', false, true);
+    $('#mapa').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    toast('Arraste o marcador azul até onde você está');
+  });
 
 
   desenha();

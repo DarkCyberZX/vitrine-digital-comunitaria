@@ -54,7 +54,10 @@
   // | "quinze reais o bolo de macaxeira de meio quilo" | "cocada 4,50"
   function interpreta(frase) {
     // o Chrome costuma escrever "quinze reais" como "R$ 15" ou "R$ 15,50": vira "15,50 reais"
-    const t = frase.toLowerCase().replace(/r\$\s*(\d+(?:[.,]\d+)?)/g, ' $1 reais ').replace(/r\$/g, ' ');
+    // e o Edge escreve "80 BRL" ou "BRL 80" (o código da moeda)
+    const t = frase.toLowerCase()
+      .replace(/r\$\s*(\d+(?:[.,]\d+)?)/g, ' $1 reais ').replace(/\bbrl\s*(\d+(?:[.,]\d+)?)/g, ' $1 reais ')
+      .replace(/(\d+(?:[.,]\d+)?)\s*brl\b/g, ' $1 reais ').replace(/r\$|\bbrl\b/g, ' ');
     let f = ' ' + numerosPorExtenso(t.replace(/[!?;]/g, ' ').replace(/\s+/g, ' ').trim()) + ' ';
     let preco = null, tamanho = '';
     // preço: o número que vem com "reais" (e, se tiver, os centavos)
