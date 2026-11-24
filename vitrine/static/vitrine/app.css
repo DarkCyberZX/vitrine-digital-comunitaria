@@ -1209,8 +1209,7 @@ html.trava-rolagem,html.trava-rolagem body{overflow:hidden}
 
 /* horário de funcionamento */
 .cl-horario{border:0;padding:0;margin:0}
-.cl-horario-campos{grid-template-columns:repeat(3,minmax(0,1fr))}
-@media (max-width:560px){.cl-horario-campos{grid-template-columns:1fr 1fr}.cl-horario-campos .campo:first-child{grid-column:1/-1}}
+.cl-horario-campos{grid-template-columns:1fr 1fr}
 .cb-horario{display:flex;align-items:center;gap:6px;font-size:14px;color:#374151;margin:2px 0}
 .banca-horario{display:flex;align-items:center;gap:8px;font-weight:700}
 
@@ -1246,3 +1245,19 @@ html.trava-rolagem,html.trava-rolagem body{overflow:hidden}
 .f-grupo{min-width:0}
 .end-linha input{width:100%}
 .btn-local{white-space:normal;text-align:center}
+
+/* dias da semana do horario: um quadradinho por dia */
+.cl-dias{border:0;padding:0;margin:4px 0 10px;min-width:0}
+.cl-dias-tit{font-weight:800;font-size:15px;margin-bottom:6px}
+.cl-dias-tit small{font-weight:400;color:#4b5563;font-size:13px;margin-left:4px}
+.cl-dias-lista{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cl-dia{position:relative;display:block}
+.cl-dia input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.cl-dia span{display:flex;align-items:center;justify-content:center;min-height:44px;border:1.5px solid #858f9e;border-radius:10px;font-weight:800;font-size:14px;background:#fff;color:#1f2937}
+.cl-dia input:checked+span{background:var(--verde);border-color:var(--verde);color:#fff}
+.cl-dia input:focus-visible+span{outline:3px solid var(--laranja);outline-offset:2px}
+@media (max-width:359px){.cl-dias-lista{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.app.contraste .cl-dia span{border:2px solid #000;color:#000}
+.app.contraste .cl-dia input:checked+span{background:#000;color:#fff}
+.cl-passo .cl-dias legend.cl-dias-tit{font-size:15px;font-weight:800;padding:0;margin:0 0 6px;display:block;color:#374151}
+.cl-dia span{font-size:13.5px}

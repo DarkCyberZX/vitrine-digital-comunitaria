@@ -31,13 +31,17 @@ class Banca(models.Model):
         validators=[RegexValidator(r'^55\d{10,11}$', 'Use 55 + DDD + número, só dígitos.')],
         help_text='Ex.: 5582999998888',
     )
-    class Dias(models.TextChoices):
-        TODOS = 'todos', 'Todos os dias'
-        SEG_SEX = 'seg_sex', 'Segunda a sexta'
-        SEG_SAB = 'seg_sab', 'Segunda a sábado'
-        FDS = 'fds', 'Sábado e domingo'
+    # dias da semana em que a loja abre, guardados como 'seg,ter,qua' (o comerciante marca cada um)
+    DIAS_SEMANA = [('seg', 'Segunda'), ('ter', 'Terça'), ('qua', 'Quarta'), ('qui', 'Quinta'),
+                   ('sex', 'Sexta'), ('sab', 'Sábado'), ('dom', 'Domingo')]
 
-    dias = models.CharField('dias que abre', max_length=10, choices=Dias.choices, blank=True)
+    class Dias:  # combinações comuns, usadas nas lojas de demonstração
+        TODOS = 'seg,ter,qua,qui,sex,sab,dom'
+        SEG_SEX = 'seg,ter,qua,qui,sex'
+        SEG_SAB = 'seg,ter,qua,qui,sex,sab'
+        FDS = 'sab,dom'
+
+    dias = models.CharField('dias que abre', max_length=30, blank=True)
     abre = models.TimeField('abre às', null=True, blank=True)
     fecha = models.TimeField('fecha às', null=True, blank=True)
     aberta = models.BooleanField('aberta agora', default=True)
@@ -68,12 +72,28 @@ class Banca(models.Model):
         return self.responsavel.split(',')[0].strip()
 
     @property
+    def dias_texto(self):
+        """'Terça a sábado', 'Segunda, quarta e sexta', 'Todos os dias'..."""
+        codigos = [c for c, _ in self.DIAS_SEMANA]
+        marcados = [i for i, c in enumerate(codigos) if c in (self.dias or '').split(',')]
+        if not marcados:
+            return ''
+        nomes = [n for _, n in self.DIAS_SEMANA]
+        if len(marcados) == 7:
+            return 'Todos os dias'
+        seguidos = marcados == list(range(marcados[0], marcados[-1] + 1))
+        if seguidos and len(marcados) >= 3:
+            return f'{nomes[marcados[0]]} a {nomes[marcados[-1]].lower()}'
+        lista = [nomes[i] if k == 0 else nomes[i].lower() for k, i in enumerate(marcados)]
+        return lista[0] if len(lista) == 1 else ', '.join(lista[:-1]) + ' e ' + lista[-1]
+
+    @property
     def horario_texto(self):
         """Ex.: 'Segunda a sábado, das 7h às 18h30'. Vazio se o comerciante não informou."""
         hora = lambda h: f'{h.hour}h' + (f'{h.minute:02d}' if h.minute else '')
         partes = []
-        if self.dias:
-            partes.append(self.get_dias_display())
+        if self.dias_texto:
+            partes.append(self.dias_texto)
         if self.abre and self.fecha:
             partes.append(f'das {hora(self.abre)} às {hora(self.fecha)}')
         return ', '.join(partes)

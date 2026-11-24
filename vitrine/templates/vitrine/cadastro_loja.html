@@ -4,7 +4,7 @@
 {% block cabeca %}{% if loja %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">{% endif %}{% endblock %}
 
 {% block conteudo %}
-<section class="tela tela-cad-loja" data-ouvir="{% if editando %}Aqui você muda os dados da sua loja. Depois toque em Salvar.{% elif conta %}Cadastrar a sua loja é de graça e tem duas etapas. Agora é a etapa 1: crie a sua conta com seu nome, um usuário e uma senha. Depois toque em Criar conta e continuar.{% else %}Etapa 2: os dados da loja. Escreva o nome da loja, o que você vende, o seu WhatsApp e, se quiser, o horário. Depois marque no mapa onde fica a loja: toque no mapa ou no botão Usar onde estou. Foto e história são opcionais. No fim, toque em Cadastrar minha loja.{% endif %}">
+<section class="tela tela-cad-loja" data-ouvir="{% if editando %}Aqui você muda os dados da sua loja. Depois toque em Salvar.{% elif conta %}Cadastrar a sua loja é de graça e tem duas etapas. Agora é a etapa 1: crie a sua conta com seu nome, um usuário e uma senha. Depois toque em Criar conta e continuar.{% else %}Etapa 2: os dados da loja. Escreva o nome da loja, o que você vende, o seu WhatsApp e, se quiser, os dias e o horário em que abre. Depois marque no mapa onde fica a loja: toque no mapa ou no botão Usar onde estou. Foto e história são opcionais. No fim, toque em Cadastrar minha loja.{% endif %}">
   <header class="cl-topo">
     <span class="ajuda-selo"><i data-lucide="store" class="ic-l" aria-hidden="true"></i> {% if editando %}Minha loja{% else %}Para quem vende{% endif %}</span>
     <h1>{% if editando %}Dados da minha loja{% else %}Cadastre a sua loja{% endif %}</h1>
@@ -64,8 +64,12 @@
       <div class="campo cheio"><label for="{{ loja.whatsapp.id_for_label }}">{{ loja.whatsapp.label }}</label>{{ loja.whatsapp }}<small class="ajuda">{{ loja.whatsapp.help_text }}</small>{{ loja.whatsapp.errors }}</div>
       <fieldset class="campo cheio cl-horario">
         <legend class="rot">Horário de funcionamento <span class="opcional">(se quiser)</span></legend>
+        <fieldset class="cl-dias">
+          <legend class="cl-dias-tit">Dias que abre <small>marque todos os dias</small></legend>
+          <div class="cl-dias-lista">{% for op in loja.dias %}<label class="cl-dia">{{ op.tag }}<span>{{ op.choice_label|slice:":3" }}</span></label>{% endfor %}</div>
+          {{ loja.dias.errors }}
+        </fieldset>
         <div class="cl-campos cl-horario-campos">
-          <div class="campo"><label for="{{ loja.dias.id_for_label }}">Dias</label>{{ loja.dias }}{{ loja.dias.errors }}</div>
           <div class="campo"><label for="{{ loja.abre.id_for_label }}">Abre às</label>{{ loja.abre }}{{ loja.abre.errors }}</div>
           <div class="campo"><label for="{{ loja.fecha.id_for_label }}">Fecha às</label>{{ loja.fecha }}{{ loja.fecha.errors }}</div>
         </div>

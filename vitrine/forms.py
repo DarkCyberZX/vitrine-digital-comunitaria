@@ -144,6 +144,8 @@ def confere_foto(arq):
 
 class LojaForm(forms.ModelForm):
     """Cadastro da loja feito pelo próprio comerciante, sem precisar de aprovação."""
+    dias = forms.MultipleChoiceField(label='Dias que abre', required=False, choices=Banca.DIAS_SEMANA,
+                                     widget=forms.CheckboxSelectMultiple)
     whatsapp = forms.CharField(label='WhatsApp da loja', max_length=20,
                                widget=forms.TextInput(attrs={'inputmode': 'tel', 'placeholder': '(82) 99999-8888', 'autocomplete': 'tel'}),
                                help_text='O número em que os clientes vão chamar você.')
@@ -174,10 +176,15 @@ class LojaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['categoria'].choices = list(Banca.Categoria.choices)  # sem a opção vazia "-----"
-        self.fields['dias'].choices = [('', 'Escolha (se quiser)')] + list(Banca.Dias.choices)
+        if not self.is_bound and self.instance.dias:
+            self.initial['dias'] = self.instance.dias.split(',')
         if self.instance.pk and not self.is_bound and self.instance.whatsapp:
             n = self.instance.whatsapp[2:]  # mostra (82) 99999-8888 e não 5582999998888
             self.initial['whatsapp'] = f'({n[:2]}) {n[2:-4]}-{n[-4:]}'
+
+    def clean_dias(self):
+        ordem = [c for c, _ in Banca.DIAS_SEMANA]
+        return ','.join(c for c in ordem if c in self.cleaned_data.get('dias', []))
 
     def clean_whatsapp(self):
         digitos = ''.join(c for c in self.cleaned_data['whatsapp'] if c.isdigit())
@@ -199,6 +206,8 @@ class LojaForm(forms.ModelForm):
             self.add_error('fecha' if abre else 'abre', 'Coloque a hora que abre e a hora que fecha.')
         elif abre and abre == fecha:
             self.add_error('fecha', 'A hora de fechar precisa ser diferente da hora de abrir.')
+        if abre and fecha and not dados.get('dias'):
+            self.add_error('dias', 'Marque os dias em que a loja abre.')
         return dados
 
     def clean_capa(self):

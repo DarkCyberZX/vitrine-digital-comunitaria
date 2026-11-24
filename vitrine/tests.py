@@ -286,10 +286,19 @@ class CadastroLojaTests(TestCase):
 
     def test_horario_de_funcionamento_aparece_na_loja(self):
         self.client.post(reverse('cadastro_loja'), self.CONTA)
-        self.client.post(reverse('cadastro_loja'), {**self.DADOS, 'l-dias': 'seg_sab', 'l-abre': '07:00', 'l-fecha': '18:30'})
+        self.client.post(reverse('cadastro_loja'), {**self.DADOS, 'l-dias': ['sab', 'ter', 'qua', 'qui', 'sex'], 'l-abre': '07:00', 'l-fecha': '18:30'})
         loja = Banca.objects.get(nome='Pastel da Joana')
-        self.assertEqual(loja.horario_texto, 'Segunda a sábado, das 7h às 18h30')
-        self.assertContains(self.client.get(reverse('banca', args=[loja.pk])), 'das 7h às 18h30')
+        self.assertEqual(loja.dias, 'ter,qua,qui,sex,sab')  # guarda na ordem da semana
+        self.assertEqual(loja.horario_texto, 'Terça a sábado, das 7h às 18h30')
+        self.assertContains(self.client.get(reverse('banca', args=[loja.pk])), 'Terça a sábado, das 7h às 18h30')
+
+    def test_dias_soltos_e_hora_sem_dia(self):
+        self.assertEqual(Banca(dias='seg,qua,sex').dias_texto, 'Segunda, quarta e sexta')
+        self.assertEqual(Banca(dias='seg,ter,qua,qui,sex,sab,dom').dias_texto, 'Todos os dias')
+        self.client.post(reverse('cadastro_loja'), self.CONTA)
+        r = self.client.post(reverse('cadastro_loja'), {**self.DADOS, 'l-abre': '07:00', 'l-fecha': '12:00'})
+        self.assertContains(r, 'Marque os dias em que a loja abre.')
+        self.assertFalse(Banca.objects.exists())
 
     def test_horario_pela_metade_e_recusado(self):
         self.client.post(reverse('cadastro_loja'), self.CONTA)
