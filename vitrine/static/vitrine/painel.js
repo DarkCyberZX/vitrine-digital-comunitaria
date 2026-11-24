@@ -71,6 +71,9 @@
       .replace(/\bbrl\s*(\d+(?:[.,]\d+)?)/g, ' $1 reais ').replace(/r\$|\bbrl\b/g, ' ');
     // tira pontuação solta (o ponto final do Edge), mas mantém o ponto de números como "4.50"
     let f = ' ' + numerosPorExtenso(t.replace(/[!?;:]/g, ' ').replace(/\.(?!\d)|(?<!\d)\./g, ' ').replace(/\s+/g, ' ').trim()) + ' ';
+    // pausas de quem pensa enquanto fala ("é...", "hum", "tipo", "né"): saem antes de tudo,
+    // para "tamanho é grande" virar "tamanho grande"
+    f = f.replace(/(^|\s)(hum+|hm+|h[ãa]+|ah+|eh+|é+|tipo|n[ée]|deixa\s+eu\s+ver)(?=\s|,|$)/g, ' ').replace(/\s+/g, ' ');
     let preco = null, tamanho = '';
     // preço: o número que vem com "reais" (e, se tiver, os centavos)
     const p = f.match(new RegExp('(?:\\s(?:por|custa|a)\\s+)?' + N + '\\s*(?:reais|real|contos?)(?:\\s+e\\s+(\\d+)(?:\\s*centavos?)?)?'));
@@ -88,8 +91,10 @@
       if (n) { preco = parseFloat(n[1].replace(',', '.')); f = f.slice(0, n.index) + ' '; }
     }
     // o que sobra é o nome do produto (sem conectivos soltos nas pontas)
+    // sobra a palavra "tamanho" quando a pessoa pensou no meio ("tamanho em 500 g")
+    f = f.replace(/\btamanho(\s+(de|em|com|e|tipo))*\b/g, ' , ');
     const nome = f.replace(/\s*,\s*/g, ' , ').replace(/\bde\s+(,\s*)*de\b/g, 'de').split(',').map((s) => s.trim()).filter(Boolean).join(' ')
-      .replace(/^(o|a|os|as|um|uma|é|e|por|custa|de|do|da|com)\s+/, '').replace(/\s+(o|a|é|e|por|custa|de|do|da|com|cada)$/, '')
+      .replace(/^((o|a|os|as|um|uma|é|e|em|por|custa|de|do|da|com)\s+)+/, '').replace(/(\s+(o|a|é|e|em|por|custa|de|do|da|com|cada))+$/, '')
       .replace(/\s+/g, ' ').trim();
     return { nome, tamanho, preco };
   }
