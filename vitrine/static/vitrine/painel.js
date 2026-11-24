@@ -80,12 +80,5 @@
   });
   // se a pessoa editar o nome à mão depois, continua marcado como voz (o cadastro começou falando)
 
-  // ---- aviso do Pix ----
-  const modal = $('#modal-pix'), ok = $('#id_v-conferiu_no_banco'), confirma = $('#pix-confirma');
-  $('#btn-vendi').addEventListener('click', () => { ok.checked = false; confirma.disabled = true; modal.classList.add('on'); });
-  ok.addEventListener('change', () => { confirma.disabled = !ok.checked; });
-  $('#pix-fecha').addEventListener('click', () => { modal.classList.remove('on'); toast('Aguarde o dinheiro entrar antes de entregar'); });
-  modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('on'); });
-
   window.vitrineInterpreta = interpreta; // para teste no console
 })();

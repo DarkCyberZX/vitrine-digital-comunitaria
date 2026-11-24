@@ -13,15 +13,16 @@ Trabalho da disciplina **Tecnologias Sociais e Assistivas** (Bacharelado em Sist
 ## O que o protótipo faz
 
 **Para quem compra**
-- Busca por loja, produto ou bairro, com filtros de categoria, preço, nota e distância.
+- Busca por loja, produto ou bairro, com filtros de categoria, preço, nota e distância. A lista mostra 10 lojas por vez, com o botão "Ver mais".
 - Mapa das lojas (agrupadas quando estão próximas); com a localização permitida, mostra a distância em km e limita o raio.
 - Página da loja com produtos (foto, descrição, preço, pronta entrega ou encomenda), a história de quem faz e as avaliações.
 - Botão do WhatsApp com mensagem pronta e "Como chegar" pelo Google Maps.
 
 **Para quem vende**
-- Cadastro da loja com CEP (o endereço se completa sozinho) e marcação no mapa ou pelo GPS.
+- Cadastro em duas etapas: primeiro só a conta; depois, já logado, os dados da loja, com CEP (o endereço se completa sozinho), marcação no mapa ou pelo GPS e horário de funcionamento (opcional).
+- Depois de entrar, o menu mostra "Minha loja".
 - Cadastro de produto **por voz**: fala "tapioca de queijo, oito reais" e o nome e o preço se preenchem.
-- Aviso para conferir o Pix no banco antes de entregar.
+- Aviso fixo no painel para conferir o Pix no banco antes de entregar (a venda é combinada pelo WhatsApp).
 
 **Acessibilidade (WCAG 2.2 AA)**
 - Ouvir a tela e ouvir os produtos e preços em voz alta, com a voz mais natural do aparelho (dá para trocar).
@@ -70,7 +71,7 @@ Sem essas variáveis, o comando sorteia senhas e mostra no terminal.
 python manage.py test vitrine
 ```
 
-São 41 testes automáticos: login e permissões (um comerciante não mexe na loja de outro), cadastro da loja, envio de fotos,
+São 44 testes automáticos: login e permissões (um comerciante não mexe na loja de outro), cadastro da loja, envio de fotos,
 avaliações, recuperação de senha e o link "Como chegar".
 
 ## Publicar

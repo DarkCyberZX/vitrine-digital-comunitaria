@@ -111,11 +111,10 @@ class SegurancaPainelTests(TestCase):
                                              'p-tamanho': 'un', 'p-disponibilidade': 'pronta'})
         self.assertFalse(Produto.objects.filter(nome='X').exists())
 
-    def test_venda_so_com_pix_conferido(self):
-        self.client.post(reverse('painel'), {'acao': 'venda'})
-        self.assertEqual(Venda.objects.count(), 0)
-        self.client.post(reverse('painel'), {'acao': 'venda', 'v-conferiu_no_banco': 'on'})
-        self.assertEqual(Venda.objects.filter(banca=self.ana, conferiu_no_banco=True).count(), 1)
+    def test_painel_mostra_aviso_do_pix_sem_botao_de_venda(self):
+        r = self.client.get(reverse('painel'))
+        self.assertContains(r, 'Confira o Pix antes de entregar')
+        self.assertNotContains(r, 'Registrar uma venda')
 
     def test_csrf_obrigatorio(self):
         from django.test import Client
@@ -243,8 +242,16 @@ class CadastroLojaTests(TestCase):
              'l-latitude': '-9.662003', 'l-longitude': '-35.707900', 'l-historia': ''}
     CONTA = {'c-first_name': 'Joana', 'c-username': 'joana', 'c-email': '', 'c-password1': 'Senha-forte-123', 'c-password2': 'Senha-forte-123'}
 
-    def test_sem_conta_cria_conta_e_loja_juntas_e_aparece_na_hora(self):
-        r = self.client.post(reverse('cadastro_loja'), {**self.DADOS, **self.CONTA})
+    def test_etapa_1_cria_so_a_conta_e_ja_entra(self):
+        r = self.client.post(reverse('cadastro_loja'), self.CONTA)
+        self.assertRedirects(r, reverse('cadastro_loja'))
+        self.assertTrue(get_user_model().objects.filter(username='joana').exists())
+        self.assertFalse(Banca.objects.exists())
+        self.assertContains(self.client.get(reverse('cadastro_loja')), 'Etapa 2')  # já logada, vê os dados da loja
+
+    def test_etapa_2_cria_a_loja_e_aparece_na_hora(self):
+        self.client.post(reverse('cadastro_loja'), self.CONTA)
+        r = self.client.post(reverse('cadastro_loja'), self.DADOS)
         self.assertRedirects(r, reverse('painel'))
         loja = Banca.objects.get(nome='Pastel da Joana')
         self.assertEqual(loja.dono.username, 'joana')
@@ -253,12 +260,28 @@ class CadastroLojaTests(TestCase):
         self.assertTrue(loja.visivel)  # sem esperar aprovação
         self.assertContains(self.client.get(reverse('inicio')), 'Pastel da Joana')
 
-    def test_se_a_loja_tem_erro_nao_cria_a_conta_sozinha(self):
-        self.client.post(reverse('cadastro_loja'), {**self.DADOS, **self.CONTA, 'l-latitude': ''})
-        self.assertFalse(get_user_model().objects.filter(username='joana').exists())
+    def test_loja_sem_local_no_mapa_nao_e_criada(self):
+        self.client.post(reverse('cadastro_loja'), self.CONTA)
+        r = self.client.post(reverse('cadastro_loja'), {**self.DADOS, 'l-latitude': ''})
+        self.assertContains(r, 'Marque no mapa')
+        self.assertFalse(Banca.objects.exists())
+
+    def test_horario_de_funcionamento_aparece_na_loja(self):
+        self.client.post(reverse('cadastro_loja'), self.CONTA)
+        self.client.post(reverse('cadastro_loja'), {**self.DADOS, 'l-dias': 'seg_sab', 'l-abre': '07:00', 'l-fecha': '18:30'})
+        loja = Banca.objects.get(nome='Pastel da Joana')
+        self.assertEqual(loja.horario_texto, 'Segunda a sábado, das 7h às 18h30')
+        self.assertContains(self.client.get(reverse('banca', args=[loja.pk])), 'das 7h às 18h30')
+
+    def test_horario_pela_metade_e_recusado(self):
+        self.client.post(reverse('cadastro_loja'), self.CONTA)
+        r = self.client.post(reverse('cadastro_loja'), {**self.DADOS, 'l-abre': '07:00'})
+        self.assertContains(r, 'Coloque a hora que abre e a hora que fecha.')
+        self.assertFalse(Banca.objects.exists())
 
     def test_local_fora_de_maceio_e_recusado(self):
-        r = self.client.post(reverse('cadastro_loja'), {**self.DADOS, **self.CONTA, 'l-latitude': '-23.55', 'l-longitude': '-46.63'})
+        self.client.post(reverse('cadastro_loja'), self.CONTA)
+        r = self.client.post(reverse('cadastro_loja'), {**self.DADOS, 'l-latitude': '-23.55', 'l-longitude': '-46.63'})
         self.assertContains(r, 'fora de Maceió')
         self.assertFalse(Banca.objects.filter(nome='Pastel da Joana').exists())
 
@@ -274,7 +297,8 @@ class CadastroLojaTests(TestCase):
 
     def test_dono_nao_vem_do_formulario(self):
         outro = get_user_model().objects.create_user('beto', password='senha-teste-123')
-        self.client.post(reverse('cadastro_loja'), {**self.DADOS, **self.CONTA, 'l-dono': outro.pk})
+        self.client.post(reverse('cadastro_loja'), self.CONTA)
+        self.client.post(reverse('cadastro_loja'), {**self.DADOS, 'l-dono': outro.pk})
         self.assertEqual(Banca.objects.get(nome='Pastel da Joana').dono.username, 'joana')
 
     def test_painel_sem_loja_manda_cadastrar(self):

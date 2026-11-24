@@ -15,6 +15,7 @@
       <h1>{{ b.nome }}</h1>
       <div class="loja-meta">
         <span><i data-lucide="map-pin" class="ic-l" aria-hidden="true"></i> {{ b.ponto }} • {{ b.bairro }}</span>
+        {% if b.horario_texto %}<span><i data-lucide="clock-3" class="ic-l" aria-hidden="true"></i> {{ b.horario_texto }}</span>{% endif %}
         {% if b.aberta %}<span class="selo aberto">● Aberto agora</span>{% else %}<span class="selo fechado">Fechado agora</span>{% endif %}
         {% if media %}
         <a class="nota nota-capa" href="#avaliacoes">

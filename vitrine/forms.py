@@ -141,7 +141,7 @@ class LojaForm(forms.ModelForm):
 
     class Meta:
         model = Banca
-        fields = ['nome', 'responsavel', 'categoria', 'whatsapp', 'bairro', 'ponto', 'cep', 'latitude', 'longitude', 'historia', 'capa']
+        fields = ['nome', 'responsavel', 'categoria', 'whatsapp', 'dias', 'abre', 'fecha', 'bairro', 'ponto', 'cep', 'latitude', 'longitude', 'historia', 'capa']
         labels = {'nome': 'Nome da loja', 'responsavel': 'Como os clientes chamam você', 'categoria': 'O que você vende',
                   'ponto': 'Onde fica (rua ou ponto de referência)', 'cep': 'CEP (se souber)',
                   'historia': 'Sua história (se quiser)', 'capa': 'Foto da loja (se quiser)'}
@@ -156,6 +156,8 @@ class LojaForm(forms.ModelForm):
             'latitude': forms.HiddenInput, 'longitude': forms.HiddenInput,
             'historia': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Ex.: Faço tapioca há 20 anos com a goma que eu mesma preparo.'}),
             'capa': forms.FileInput(attrs={'accept': 'image/jpeg,image/png,image/webp'}),
+            'abre': forms.TimeInput(attrs={'type': 'time'}, format='%H:%M'),
+            'fecha': forms.TimeInput(attrs={'type': 'time'}, format='%H:%M'),
         }
         error_messages = {'latitude': {'required': 'Marque no mapa onde fica a sua loja.'},
                           'longitude': {'required': 'Marque no mapa onde fica a sua loja.'}}
@@ -163,6 +165,7 @@ class LojaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['categoria'].choices = list(Banca.Categoria.choices)  # sem a opção vazia "-----"
+        self.fields['dias'].choices = [('', 'Escolha (se quiser)')] + list(Banca.Dias.choices)
         if self.instance.pk and not self.is_bound and self.instance.whatsapp:
             n = self.instance.whatsapp[2:]  # mostra (82) 99999-8888 e não 5582999998888
             self.initial['whatsapp'] = f'({n[:2]}) {n[2:-4]}-{n[-4:]}'
@@ -181,6 +184,12 @@ class LojaForm(forms.ModelForm):
         # a Vitrine é de Maceió: o ponto do mapa precisa cair na cidade
         if lat is not None and lng is not None and not (-9.78 <= float(lat) <= -9.40 and -35.90 <= float(lng) <= -35.55):
             self.add_error(None, 'O ponto marcado no mapa está fora de Maceió. Arraste o marcador até a sua loja.')
+        # horário é opcional, mas se colocar um, precisa colocar os dois
+        abre, fecha = dados.get('abre'), dados.get('fecha')
+        if bool(abre) != bool(fecha):
+            self.add_error('fecha' if abre else 'abre', 'Coloque a hora que abre e a hora que fecha.')
+        elif abre and abre == fecha:
+            self.add_error('fecha', 'A hora de fechar precisa ser diferente da hora de abrir.')
         return dados
 
     def clean_capa(self):

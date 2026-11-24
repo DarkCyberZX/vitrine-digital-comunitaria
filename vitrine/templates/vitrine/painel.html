@@ -3,7 +3,7 @@
 {% block titulo %}Minha vitrine – {{ minha.nome }}{% endblock %}
 
 {% block conteudo %}
-<section class="tela tela-painel" data-ouvir="Esta é a sua vitrine. No alto você vê a sua nota, as avaliações, os produtos e as vendas. Para colocar um produto novo, escreva o nome e o preço nos campos, ou, se preferir, toque no microfone laranja e fale, por exemplo: tapioca de queijo, oito reais. Se quiser, coloque uma foto. Depois toque em Colocar na vitrine. Para mudar o preço ou a foto de um produto, toque no lápis ao lado dele. Quando vender, toque em Registrar uma venda e só entregue depois de ver o dinheiro no aplicativo do seu banco.">
+<section class="tela tela-painel" data-ouvir="Esta é a sua vitrine. No alto você vê a sua nota, as avaliações, os produtos e as vendas. Para colocar um produto novo, escreva o nome e o preço nos campos, ou, se preferir, toque no microfone laranja e fale, por exemplo: tapioca de queijo, oito reais. Se quiser, coloque uma foto. Depois toque em Colocar na vitrine. Para mudar o preço ou a foto de um produto, toque no lápis ao lado dele. Quando vender pelo WhatsApp, só entregue depois de ver o dinheiro no aplicativo do seu banco: comprovante por foto pode ser falso.">
   <div class="ola painel-ola">
     <div class="ola-linha">
       <div>
@@ -32,10 +32,6 @@
     <div class="res-card">
       <span class="res-ic" aria-hidden="true"><i data-lucide="tag" class="ic-l"></i></span>
       <div><b>{{ produtos|length }}</b><small>produto{{ produtos|length|pluralize }} na vitrine</small></div>
-    </div>
-    <div class="res-card">
-      <span class="res-ic laranja" aria-hidden="true"><i data-lucide="shield-check" class="ic-l"></i></span>
-      <div><b>{{ total_vendas }}</b><small>venda{{ total_vendas|pluralize }} conferida{{ total_vendas|pluralize }}</small></div>
     </div>
   </section>
 
@@ -82,15 +78,17 @@
     <div class="passo-tit"><span class="n">{% if editando %}3{% else %}4{% endif %}</span>{% if editando %}Salve as mudanças{% else %}Coloque na vitrine{% endif %}</div>
     <button class="btn-prim" type="submit"><i data-lucide="check" class="ic-l" aria-hidden="true"></i> {% if editando %}Salvar mudanças{% else %}Colocar na vitrine{% endif %}</button>
     {% if editando %}<a class="btn-sec btn-cancela" href="{% url 'painel' %}">Cancelar</a>{% endif %}
-    <div class="fixo"><i data-lucide="pin" class="ic-l" aria-hidden="true"></i> Catálogo fixo: não precisa postar todo dia.</div>
   </form>
 
-  <div class="pix-card">
-    <h3><i data-lucide="shield-check" class="ic-l" aria-hidden="true"></i> Vendeu? Confira antes de entregar</h3>
-    <p>Só entregue o produto depois de olhar o saldo <b>direto no app do seu banco</b>. Comprovante enviado por foto pode ser falso.</p>
-    <button class="btn-prim" id="btn-vendi" type="button" style="background:var(--alerta)">Registrar uma venda</button>
-    {% if vendas %}<div class="vendas">Últimas vendas conferidas: {% for v in vendas %}{{ v.registrada_em|date:"d/m H:i" }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>{% endif %}
-  </div>
+  <aside class="pix-card" aria-labelledby="pix-tit">
+    <h3 id="pix-tit"><i data-lucide="shield-check" class="ic-l" aria-hidden="true"></i> Vendeu pelo WhatsApp? Confira o Pix antes de entregar</h3>
+    <p>Golpistas mandam comprovante falso por foto. O único jeito seguro é olhar o saldo no aplicativo do seu banco.</p>
+    <ol class="pix-passos">
+      <li><span class="n" aria-hidden="true">1</span><span>Abra o <b>app do seu banco</b>.</span></li>
+      <li><span class="n" aria-hidden="true">2</span><span>Veja se o valor <b>já entrou no extrato</b>.</span></li>
+      <li><span class="n" aria-hidden="true">3</span><span>Só então <b>entregue o produto</b>.</span></li>
+    </ol>
+  </aside>
   </div>
   <div class="painel-col">
   <div class="caixa">
@@ -137,24 +135,7 @@
   </div>
 </section>
 
-<div class="modal-fundo" id="modal-pix" role="dialog" aria-modal="true" aria-labelledby="pix-tit">
-  <form class="modal" method="post">
-    {% csrf_token %}
-    <input type="hidden" name="acao" value="venda">
-    <div class="icone"><i data-lucide="shield-check" class="ic-l" aria-hidden="true"></i></div>
-    <h3 id="pix-tit">Antes de entregar, confira o Pix</h3>
-    <p>Golpistas mandam comprovante falso por foto. O único jeito seguro é olhar o saldo no aplicativo do seu banco.</p>
-    <div class="passos">
-      <div class="passo"><span class="n">1</span><div>Abra o <b>app do seu banco</b>.</div></div>
-      <div class="passo"><span class="n">2</span><div>Veja se o valor <b>já entrou no extrato</b>.</div></div>
-      <div class="passo"><span class="n">3</span><div>Só então <b>entregue o produto</b>.</div></div>
-    </div>
-    <label class="check">{{ venda_form.conferiu_no_banco }} Conferi no app do banco e o dinheiro entrou</label>
-    <button class="btn-prim" id="pix-confirma" type="submit" disabled>Confirmar entrega</button>
-    <button class="btn-sec" id="pix-fecha" type="button">Ainda não entrou</button>
-  </form>
-</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 {% endblock %}
 
-{% block scripts %}<script src="{% static 'vitrine/painel.js' %}?v=2"></script>{% endblock %}
+{% block scripts %}<script src="{% static 'vitrine/painel.js' %}?v=3"></script>{% endblock %}

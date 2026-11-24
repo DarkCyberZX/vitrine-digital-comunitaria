@@ -31,6 +31,15 @@ class Banca(models.Model):
         validators=[RegexValidator(r'^55\d{10,11}$', 'Use 55 + DDD + número, só dígitos.')],
         help_text='Ex.: 5582999998888',
     )
+    class Dias(models.TextChoices):
+        TODOS = 'todos', 'Todos os dias'
+        SEG_SEX = 'seg_sex', 'Segunda a sexta'
+        SEG_SAB = 'seg_sab', 'Segunda a sábado'
+        FDS = 'fds', 'Sábado e domingo'
+
+    dias = models.CharField('dias que abre', max_length=10, choices=Dias.choices, blank=True)
+    abre = models.TimeField('abre às', null=True, blank=True)
+    fecha = models.TimeField('fecha às', null=True, blank=True)
     aberta = models.BooleanField('aberta agora', default=True)
     da_comunidade = models.BooleanField('selo da comunidade', default=True)
     emoji = models.CharField(max_length=8, default='🛍️')
@@ -57,6 +66,17 @@ class Banca(models.Model):
     @property
     def responsavel_nome(self):
         return self.responsavel.split(',')[0].strip()
+
+    @property
+    def horario_texto(self):
+        """Ex.: 'Segunda a sábado, das 7h às 18h30'. Vazio se o comerciante não informou."""
+        hora = lambda h: f'{h.hour}h' + (f'{h.minute:02d}' if h.minute else '')
+        partes = []
+        if self.dias:
+            partes.append(self.get_dias_display())
+        if self.abre and self.fecha:
+            partes.append(f'das {hora(self.abre)} às {hora(self.fecha)}')
+        return ', '.join(partes)
 
     @property
     def icone_categoria(self):

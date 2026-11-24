@@ -940,7 +940,7 @@ html{scroll-behavior:smooth}
 .ver-todas{display:inline-block;margin-top:10px;font-weight:800;color:var(--verde);font-size:14px}
 @media (min-width:768px){
   .so-celular{display:none}
-  .tela-painel .resumo{grid-column:1/-1;grid-template-columns:repeat(4,1fr);margin:12px 8px 4px}
+  .tela-painel .resumo{grid-column:1/-1;grid-template-columns:repeat(3,1fr);margin:12px 8px 4px}
   .tela-painel > form.caixa:first-of-type{grid-row:auto}
   .tela-painel > .caixa-produto{grid-row:span 4}
   .res-card{padding:14px 16px}
@@ -1199,3 +1199,30 @@ html.trava-rolagem,html.trava-rolagem body{overflow:hidden}
 /* descrição do produto */
 .prod .prod-desc{font-size:13.5px;color:#4b5563;line-height:1.4;margin:3px 0 4px}
 .meu .t .meu-desc{display:block;font-size:12.5px;color:#4b5563;margin-top:1px}
+
+/* lista da página inicial: 10 lojas por vez e o botão "Ver mais" */
+.ver-mais-caixa{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0 4px}
+.ver-mais-txt{margin:0;color:var(--cinza);font-size:15px}
+.btn-ver-mais{min-height:54px;width:100%;max-width:420px;border:2px solid var(--verde);border-radius:12px;background:#fff;color:var(--verde);font-weight:800;font-size:17px;padding:12px 18px;cursor:pointer}
+.btn-ver-mais:hover{background:var(--verde);color:#fff}
+.btn-ver-mais:focus-visible{outline:3px solid #1d4ed8;outline-offset:3px}
+
+/* horário de funcionamento */
+.cl-horario{border:0;padding:0;margin:0}
+.cl-horario-campos{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:560px){.cl-horario-campos{grid-template-columns:1fr 1fr}.cl-horario-campos .campo:first-child{grid-column:1/-1}}
+.cb-horario{display:flex;align-items:center;gap:6px;font-size:14px;color:#374151;margin:2px 0}
+.banca-horario{display:flex;align-items:center;gap:8px;font-weight:700}
+
+/* painel: aviso fixo do Pix (sem botão de registrar venda) e resumo com 3 números */
+.pix-passos{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.pix-passos li{display:flex;gap:10px;align-items:center;font-size:15px}
+.pix-passos .n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--alerta);color:#fff;font-weight:800;display:grid;place-items:center}
+.tela-painel .resumo .res-card:last-child:nth-child(odd){grid-column:1/-1}
+@media (min-width:768px){.tela-painel .resumo .res-card:last-child:nth-child(odd){grid-column:auto}}
+
+/* cadastro do comerciante em duas etapas */
+.cl-etapas{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0;padding:0;list-style:none;font-size:15px}
+.cl-etapas li{padding:6px 12px;border-radius:99px;background:#eef2f1;color:#374151}
+.cl-etapas li.atual{background:var(--verde);color:#fff;font-weight:800}
+.cl-etapas li.feita{background:#d1fae5;color:#065f46}

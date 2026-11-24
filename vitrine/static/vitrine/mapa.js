@@ -111,10 +111,14 @@
       el('div', { class: 'cb-corpo' },
         el('h3', {}, b.nome), estrelas(b.media, b.n_aval),
         el('p', { class: 'cb-local' }, local), el('p', { class: 'cb-preco' }, preco),
+        b.horario ? el('p', { class: 'cb-horario' }, icone('clock-3'), ' ', b.horario) : null,
         b.achados && b.achados.length ? el('p', { class: 'cb-achou' }, icone('search'), ' Tem: ', el('b', {}, b.achados.join(', '))) : null,
         b.trecho && el('blockquote', { class: 'cb-trecho' }, `“${b.trecho}”`),
         selos));
   }
+
+  const POR_VEZ = 10;
+  let limite = POR_VEZ, ultimaChave = null;
 
   function desenha() {
     const { l, f } = filtradas();
@@ -123,7 +127,22 @@
     $('#f-aplicar').textContent = `Ver ${l.length} ${l.length === 1 ? 'loja' : 'lojas'}`;
     const lista = $('#lista'); lista.replaceChildren();
     if (!l.length) lista.append(el('div', { class: 'vazio' }, 'Nenhuma loja com esses filtros. ', el('button', { type: 'button', class: 'link-limpar', id: 'limpar-vazio' }, 'Limpar filtros')));
-    l.forEach((b) => lista.append(cartao(b)));
+    // mostra as 10 primeiras (as mais bem avaliadas, ou conforme a ordem escolhida) e o botão "Ver mais"
+    const chave = JSON.stringify([f, busca, perto && [perto.lat, perto.lng]]);
+    if (chave !== ultimaChave) { limite = POR_VEZ; ultimaChave = chave; }
+    const antes = lista.childElementCount;
+    l.slice(0, limite).forEach((b) => lista.append(cartao(b)));
+    if (l.length > limite) {
+      const resta = l.length - limite;
+      const bt = el('button', { type: 'button', class: 'btn-ver-mais', id: 'ver-mais' },
+        `Ver mais lojas (${Math.min(POR_VEZ, resta)} de ${resta} restantes)`);
+      bt.addEventListener('click', () => {
+        const proxima = limite; limite += POR_VEZ; desenha();
+        const c = lista.querySelectorAll('.cartao-banca')[proxima + antes]; if (c) c.focus();
+      });
+      lista.append(el('div', { class: 'ver-mais-caixa' },
+        el('p', { class: 'ver-mais-txt' }, `Mostrando ${limite} de ${l.length} lojas`), bt));
+    }
     desenhaIcones();
     const lv = $('#limpar-vazio'); if (lv) lv.addEventListener('click', limpar);
     if (mapa) {

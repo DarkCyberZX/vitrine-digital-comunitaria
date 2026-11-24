@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 {% block cabeca %}{% endblock %}
-<link rel="stylesheet" href="{% static 'vitrine/app.css' %}?v=67">
+<link rel="stylesheet" href="{% static 'vitrine/app.css' %}?v=69">
 </head>
 <body>
 <div class="app">
@@ -34,7 +34,7 @@
         <a class="cab-link" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">Entrar</a>
         {% endif %}
         <button type="button" class="cab-acess js-abre-acess" aria-haspopup="dialog" aria-controls="acess-fundo"><i data-lucide="accessibility" class="ic-l" aria-hidden="true"></i> Acessibilidade</button>
-        <a class="cab-cta {% if aba == 'vender' %}on{% endif %}" href="{% url 'painel' %}"><i data-lucide="store" class="ic-l" aria-hidden="true"></i> Sou comerciante</a>
+        <a class="cab-cta {% if aba == 'vender' %}on{% endif %}" href="{% url 'painel' %}"{% if aba == 'vender' %} aria-current="page"{% endif %}><i data-lucide="store" class="ic-l" aria-hidden="true"></i> {% if user.is_authenticated and user.banca %}Minha loja{% elif user.is_authenticated %}Cadastrar minha loja{% else %}Sou comerciante{% endif %}</a>
       </div>
     </div>
   </header>
@@ -65,7 +65,7 @@
       <nav class="rod-col" aria-label="Para quem vende">
         <b>Para quem vende</b>
         <a href="{% url 'cadastro_loja' %}">Cadastrar minha loja</a>
-        <a href="{% url 'painel' %}">Painel do comerciante</a>
+        {% if user.is_authenticated and user.banca %}<a href="{% url 'painel' %}">Minha loja</a>{% else %}<a href="{% url 'painel' %}">Painel do comerciante</a>{% endif %}
         <a href="{% url 'password_reset' %}">Esqueci minha senha</a>
       </nav>
       <div class="rod-col">
@@ -88,7 +88,7 @@
 
   <nav class="nav" aria-label="Navegação">
     <a href="{% url 'inicio' %}" class="{% if aba == 'inicio' %}on{% endif %}"><span class="i" aria-hidden="true"><i data-lucide="map" class="ic-l" aria-hidden="true"></i></span>Comprar</a>
-    <a href="{% url 'painel' %}" class="{% if aba == 'vender' %}on{% endif %}"><span class="i" aria-hidden="true"><i data-lucide="store" class="ic-l" aria-hidden="true"></i></span>Vender</a>
+    <a href="{% url 'painel' %}" class="{% if aba == 'vender' %}on{% endif %}"><span class="i" aria-hidden="true"><i data-lucide="store" class="ic-l" aria-hidden="true"></i></span>{% if user.is_authenticated and user.banca %}Minha loja{% else %}Vender{% endif %}</a>
     <button type="button" id="btn-acess" class="js-abre-acess" aria-haspopup="dialog" aria-controls="acess-fundo"><span class="i" aria-hidden="true"><i data-lucide="accessibility" class="ic-l" aria-hidden="true"></i></span>Acessível</button>
     <a href="{% url 'sobre' %}" class="{% if aba == 'sobre' %}on{% endif %}"><span class="i" aria-hidden="true"><i data-lucide="circle-help" class="ic-l" aria-hidden="true"></i></span>Ajuda</a>
   </nav>

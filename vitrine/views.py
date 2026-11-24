@@ -13,8 +13,8 @@ from django.templatetags.static import static
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
-from .forms import AvaliacaoForm, CadastroForm, HistoriaForm, LojaForm, ProdutoForm, VendaForm
-from .models import Avaliacao, Banca, Produto, Venda
+from .forms import AvaliacaoForm, CadastroForm, HistoriaForm, LojaForm, ProdutoForm
+from .models import Avaliacao, Banca, Produto
 
 
 
@@ -31,7 +31,7 @@ def inicio(request):
         'qtd': b.qtd, 'menor': float(b.menor) if b.menor is not None else None,
         'busca': ' '.join(p.nome for p in b.produtos.all()),
         'produtos': [p.nome for p in b.produtos.all()], 'pdesc': [p.descricao for p in b.produtos.all()],
-        'cat_nome': b.get_categoria_display(),
+        'cat_nome': b.get_categoria_display(), 'horario': b.horario_texto,
         'url': reverse('banca', args=[b.id]),
         'foto': b.foto_url,
         'media': round(b.media, 1) if b.media else None, 'n_aval': b.n_aval,
@@ -132,6 +132,8 @@ def _reais_por_extenso(valor):
 def texto_para_ouvir(b):
     """Texto lido em voz alta pelo botão 'Ouvir' (para quem tem dificuldade de leitura ou baixa visão)."""
     partes = [f'{b.nome}. {"Aberta agora" if b.aberta else "Fechada agora"}. Fica em {b.ponto}, {b.bairro}.']
+    if b.horario_texto:
+        partes.append(f'Funciona {b.horario_texto[0].lower() + b.horario_texto[1:]}.')
     notas = [a.nota for a in b.avaliacoes.all() if a.visivel]
     if notas:
         media = f'{sum(notas) / len(notas):.1f}'.replace('.', ',')
@@ -167,7 +169,6 @@ def painel(request):
 
     form = ProdutoForm(prefix='p', instance=editando)
     hist_form = HistoriaForm(instance=minha, prefix='h')
-    venda_form = VendaForm(prefix='v')
 
     if request.method == 'POST':
         acao = request.POST.get('acao')
@@ -190,22 +191,15 @@ def painel(request):
                 hist_form.save()
                 messages.success(request, 'História salva.')
                 return redirect('painel')
-        elif acao == 'venda':
-            venda_form = VendaForm(request.POST, prefix='v')
-            if venda_form.is_valid():
-                Venda.objects.create(banca=minha, conferiu_no_banco=True)
-                messages.success(request, 'Venda registrada com segurança.')
-                return redirect('painel')
-            messages.error(request, 'Só confirme a entrega depois de ver o dinheiro no app do banco.')
 
     # resumo da loja para o comerciante acompanhar
     avaliacoes = minha.avaliacoes.filter(visivel=True)
     media = avaliacoes.aggregate(m=Avg('nota'))['m']
     return render(request, 'vitrine/painel.html', {
-        'minha': minha, 'form': form, 'hist_form': hist_form, 'venda_form': venda_form, 'editando': editando,
-        'produtos': minha.produtos.all(), 'vendas': minha.vendas.all()[:5], 'aba': 'vender',
+        'minha': minha, 'form': form, 'hist_form': hist_form, 'editando': editando,
+        'produtos': minha.produtos.all(), 'aba': 'vender',
         'media': media, 'estrelas_media': _classes_estrelas(media), 'total_aval': avaliacoes.count(),
-        'recentes': avaliacoes[:3], 'total_vendas': minha.vendas.count(),
+        'recentes': avaliacoes[:3],
     })
 
 
@@ -245,24 +239,28 @@ def _bairros_conhecidos():
 
 
 def cadastro_loja(request):
-    """O comerciante cria a própria loja, sem esperar aprovação. Sem conta, cria a conta junto."""
+    """O comerciante cria a própria loja, sem esperar aprovação, em duas etapas:
+    1) sem conta: só cria a conta (nome, usuário e senha) e já entra;
+    2) já logado: preenche os dados da loja, o local no mapa e, se quiser, foto e história."""
     if request.user.is_authenticated and _banca_do_usuario(request):
         return redirect('painel')
-    sem_conta = not request.user.is_authenticated
-    conta = CadastroForm(request.POST or None, prefix='c') if sem_conta else None
-    loja = LojaForm(request.POST or None, request.FILES or None, prefix='l')
-    if request.method == 'POST' and loja.is_valid() and (conta is None or conta.is_valid()):
-        with transaction.atomic():  # ou cria conta e loja juntas, ou nenhuma
-            user = conta.save() if conta else request.user
-            nova = loja.save(commit=False)
-            nova.dono = user  # o dono vem da sessão (ou da conta recém-criada), nunca do formulário
-            nova.save()
-        if conta:
+    if not request.user.is_authenticated:
+        conta = CadastroForm(request.POST or None, prefix='c')
+        if request.method == 'POST' and conta.is_valid():
+            user = conta.save()
             login(request, user)
+            messages.success(request, f'Conta criada, {user.first_name}! Agora conte sobre a sua loja.')
+            return redirect('cadastro_loja')
+        return render(request, 'vitrine/cadastro_loja.html', {'conta': conta, 'loja': None, 'aba': 'vender', 'editando': False})
+    loja = LojaForm(request.POST or None, request.FILES or None, prefix='l')
+    if request.method == 'POST' and loja.is_valid():
+        nova = loja.save(commit=False)
+        nova.dono = request.user  # o dono vem da sessão, nunca do formulário
+        nova.save()
         messages.success(request, 'Sua loja já está no ar! Agora coloque os seus produtos.')
         return redirect('painel')
     return render(request, 'vitrine/cadastro_loja.html', {
-        'conta': conta, 'loja': loja, 'bairros': _bairros_conhecidos(), 'aba': 'vender', 'editando': False, 'categorias': _cats()})
+        'conta': None, 'loja': loja, 'bairros': _bairros_conhecidos(), 'aba': 'vender', 'editando': False, 'categorias': _cats()})
 
 
 @login_required

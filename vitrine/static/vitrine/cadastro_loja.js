@@ -9,6 +9,8 @@
     document.querySelectorAll('input[type=password], input[data-senha]').forEach((i) => { i.dataset.senha = '1'; i.type = c.checked ? 'text' : 'password'; });
   }));
 
+  if (!lat) return; // etapa 1 (só a conta): não tem mapa nem foto
+
   // prévia da foto da loja
   const foto = $('#id_l-capa');
   if (foto) foto.addEventListener('change', () => {
