@@ -133,9 +133,8 @@
     const antes = lista.childElementCount;
     l.slice(0, limite).forEach((b) => lista.append(cartao(b)));
     if (l.length > limite) {
-      const resta = l.length - limite;
       const bt = el('button', { type: 'button', class: 'btn-ver-mais', id: 'ver-mais' },
-        `Ver mais lojas (${Math.min(POR_VEZ, resta)} de ${resta} restantes)`);
+        'Ver mais lojas');
       bt.addEventListener('click', () => {
         const proxima = limite; limite += POR_VEZ; desenha();
         const c = lista.querySelectorAll('.cartao-banca')[proxima + antes]; if (c) c.focus();
