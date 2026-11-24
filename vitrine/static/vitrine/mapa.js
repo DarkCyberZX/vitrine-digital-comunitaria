@@ -230,6 +230,7 @@
       return bt;
     } });
     new Centraliza().addTo(mapa);
+    mapa.on('click', (e) => { if (ajustavel && perto) moveVoce(e.latlng); });
     desenhaIcones();
   } else {
     $('#mapa').append(el('div', { class: 'vazio' }, 'Mapa indisponível sem internet.'));
@@ -261,19 +262,26 @@
 
   // ---------- sua localização (só pelo GPS, quando a pessoa permite) ----------
   const status = $('#local-status'), dicaKm = $('#f-km-dica');
-  function usaLocal(lat, lng, como, rolar) {
-    perto = { lat, lng }; origem = como; $('#f-ordem').value = 'perto';
+  let ajustavel = false; // endereço digitado: o ponto é aproximado e a pessoa pode mudar no mapa
+  function moveVoce(ll) {
+    perto = { lat: ll.lat, lng: ll.lng }; if (marcaVoce) marcaVoce.setLatLng(ll);
+    status.textContent = 'Ponto ajustado no mapa. As distâncias já foram atualizadas.'; status.classList.add('ok');
+    desenha();
+  }
+  function usaLocal(lat, lng, como, rolar, podeAjustar) {
+    perto = { lat, lng }; origem = como; $('#f-ordem').value = 'perto'; ajustavel = !!podeAjustar;
     if (mapa) {
       if (marcaVoce) marcaVoce.remove();
-      marcaVoce = L.marker([lat, lng], { title: 'Você está aqui', interactive: false, keyboard: false, icon: L.divIcon({ className: '', html: '<div class="voce"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }) }).addTo(mapa);
-      mapa.setView([lat, lng], 15);
+      marcaVoce = L.marker([lat, lng], { title: ajustavel ? 'Seu endereço (arraste para ajustar)' : 'Você está aqui', interactive: ajustavel, draggable: ajustavel, keyboard: false, icon: L.divIcon({ className: '', html: `<div class="voce${ajustavel ? ' ajusta' : ''}"></div>`, iconSize: ajustavel ? [28, 28] : [18, 18], iconAnchor: ajustavel ? [14, 14] : [9, 9] }) }).addTo(mapa);
+      if (ajustavel) marcaVoce.on('dragend', () => moveVoce(marcaVoce.getLatLng()));
+      mapa.setView([lat, lng], ajustavel ? 16 : 15);
     }
     status.textContent = como; status.classList.add('ok'); dicaKm.hidden = true;
     desenha();
     if (rolar) $('.bancas-sec').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   function esqueceLocal() {
-    perto = null; origem = '';
+    perto = null; origem = ''; ajustavel = false;
     if (marcaVoce) { marcaVoce.remove(); marcaVoce = null; }
     status.textContent = 'Use sua localização ou digite um endereço para ver a distância até cada loja.'; status.classList.remove('ok'); dicaKm.hidden = false;
   }
@@ -306,23 +314,31 @@
     status.classList.remove('ok'); status.textContent = 'Procurando o endereço…';
     const q = new URLSearchParams({ format: 'json', limit: '1', countrycodes: 'br' });
     let nome = txt;
-    const d = txt.replace(/\D/g, '');
+    const cep = txt.match(/\b\d{5}-?\d{3}\b/), d = cep ? cep[0].replace('-', '') : '';
+    const numero = (cep ? txt.replace(cep[0], '') : '').match(/\d+/);
     try {
-      if (/^\s*\d{5}-?\d{3}\s*$/.test(txt)) {
+      if (cep) {
         const e = await (await fetch(`https://viacep.com.br/ws/${d}/json/`)).json();
         if (e.erro) { falha('CEP não encontrado. Confira os números.'); return; }
         if (e.localidade !== 'Maceió') { falha(`Esse CEP é de ${e.localidade}. A Vitrine, por enquanto, é só de Maceió.`); return; }
         nome = [e.logradouro, e.bairro].filter(Boolean).join(', ') || txt;
-        q.set('q', [e.logradouro, e.bairro, 'Maceió, Alagoas'].filter(Boolean).join(', '));
+        q.set('q', [e.logradouro && numero ? `${e.logradouro}, ${numero[0]}` : e.logradouro, e.bairro, 'Maceió, Alagoas'].filter(Boolean).join(', '));
+        if (numero) nome = `${e.logradouro}, ${numero[0]} (${e.bairro})`;
       } else {
         q.set('q', /macei[oó]/i.test(txt) ? txt : `${txt}, Maceió, Alagoas`);
       }
       // só aceita resultados dentro de Maceió
       q.set('viewbox', '-35.85,-9.40,-35.60,-9.75'); q.set('bounded', '1');
-      const [achou] = await (await fetch('https://nominatim.openstreetmap.org/search?' + q, { headers: { 'Accept-Language': 'pt-BR' } })).json();
+      const procura = async () => (await (await fetch('https://nominatim.openstreetmap.org/search?' + q, { headers: { 'Accept-Language': 'pt-BR' } })).json())[0];
+      let achou = await procura();
+      // o mapa nem sempre conhece o número da casa: tenta de novo só com a rua
+      if (!achou && /,\s*\d+/.test(q.get('q'))) { q.set('q', q.get('q').replace(/,\s*\d+\b/, '')); achou = await procura(); }
       if (!achou) { falha('Não achamos esse endereço em Maceió. Tente o nome da rua com o bairro, ou o CEP.'); return; }
       fechaFiltrosSePrecisar();
-      usaLocal(parseFloat(achou.lat), parseFloat(achou.lon), `Usando o endereço: ${nome}.`, true);
+      // achou a casa pelo número: ponto exato; senão é um ponto da rua ou do bairro, e a pessoa ajusta
+      const exato = achou.addresstype === 'house' || achou.type === 'house' || achou.class === 'building';
+      usaLocal(parseFloat(achou.lat), parseFloat(achou.lon), exato ? `Usando o endereço: ${nome}.`
+        : `Usando o endereço: ${nome}. O ponto é aproximado: arraste o marcador azul (ou toque no mapa) até onde você está.`, true, true);
       toast('Mostrando a distância a partir desse endereço');
     } catch (err) {
       falha('Não deu para procurar o endereço agora. Tente de novo.');

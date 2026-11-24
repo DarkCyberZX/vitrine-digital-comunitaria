@@ -1233,3 +1233,4 @@ html.trava-rolagem,html.trava-rolagem body{overflow:hidden}
 .end-linha input{flex:1;min-width:0;border:1.5px solid #858f9e;border-radius:10px;padding:10px 12px;font-size:16px;min-height:44px;background:#fff}
 .end-linha input:focus-visible{outline:3px solid var(--laranja);outline-offset:2px}
 .app.contraste .end-linha input{border:2px solid #000}
+.voce.ajusta{width:28px;height:28px;border-width:4px;cursor:grab;box-shadow:0 0 0 8px rgba(37,99,235,.25),0 2px 6px rgba(0,0,0,.35)}
