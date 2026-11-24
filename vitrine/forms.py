@@ -77,45 +77,38 @@ class AvaliacaoForm(forms.ModelForm):
 
 
 class CadastroForm(UserCreationForm):
-    """Cadastro curto: nome, e-mail e senha. O e-mail é o login (não mandamos código para confirmar)."""
+    """Cadastro curto: nome, usuário e senha (sem e-mail)."""
     first_name = forms.CharField(label='Seu nome', max_length=40,
                                  widget=forms.TextInput(attrs={'autocomplete': 'given-name', 'placeholder': 'Ex.: Maria'}))
-    email = forms.EmailField(label='Seu e-mail', max_length=150,
-                             help_text='É com ele que você entra na conta e recupera a senha.',
-                             widget=forms.EmailInput(attrs={'autocomplete': 'email', 'placeholder': 'Ex.: maria@gmail.com'}))
 
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ['first_name', 'email']
+        fields = ['first_name', 'username']
+        labels = {'username': 'Usuário'}
+        help_texts = {'username': 'É com ele que você entra. Só letras, números e @ . + - _ (sem espaço). Ex.: maria.silva'}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({'autocomplete': 'username', 'autocapitalize': 'none', 'placeholder': 'Ex.: maria.silva'})
         self.fields['password1'].label = 'Senha'
         self.fields['password1'].help_text = 'Pelo menos 8 letras ou números, e não pode ser só números.'
         self.fields['password2'].label = 'Repita a senha'
         self.fields['password2'].help_text = ''
 
-    def clean_email(self):
-        email = self.cleaned_data.get('email', '').strip().lower()
-        if User.objects.filter(Q(email__iexact=email) | Q(username__iexact=email)).exists():
-            raise forms.ValidationError('Já existe uma conta com este e-mail. Toque em Entrar.')
-        return email
-
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.username = self.cleaned_data['email']  # o Django exige um usuário: usamos o próprio e-mail
-        if commit:
-            user.save()
-        return user
+    def clean_username(self):
+        usuario = super().clean_username()
+        # não deixa criar "Maria" se já existe "maria", nem usar o e-mail de uma conta antiga
+        if User.objects.filter(Q(username__iexact=usuario) | Q(email__iexact=usuario)).exists():
+            raise forms.ValidationError('Esse usuário já existe. Escolha outro.')
+        return usuario
 
 
 class EntrarForm(AuthenticationForm):
-    """Entrar com o e-mail (contas antigas ainda entram com o usuário)."""
+    """Entrar com o usuário (contas antigas criadas com e-mail também entram pelo e-mail)."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['username'].label = 'E-mail'
-        self.fields['username'].widget.attrs.update({'autocomplete': 'email', 'inputmode': 'email',
-                                                     'autocapitalize': 'none', 'placeholder': 'O e-mail da sua conta'})
+        self.fields['username'].label = 'Usuário'
+        self.fields['username'].widget.attrs.update({'autocomplete': 'username', 'autocapitalize': 'none', 'placeholder': 'Seu usuário'})
 
 
 class EsqueciSenhaForm(PasswordResetForm):

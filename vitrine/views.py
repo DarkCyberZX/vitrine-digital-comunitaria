@@ -215,7 +215,7 @@ def remover_produto(request, pk):
 
 
 def cadastro(request):
-    """Cadastro curto do cliente (nome, e-mail e senha) para poder avaliar bancas."""
+    """Cadastro curto do cliente (nome, usuário e senha) para poder avaliar bancas."""
     proximo = request.POST.get('next') or request.GET.get('next') or ''
     if not url_has_allowed_host_and_scheme(proximo, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
         proximo = ''
@@ -240,7 +240,7 @@ def _bairros_conhecidos():
 
 def cadastro_loja(request):
     """O comerciante cria a própria loja, sem esperar aprovação, em duas etapas:
-    1) sem conta: só cria a conta (nome, e-mail e senha) e já entra;
+    1) sem conta: só cria a conta (nome, usuário e senha) e já entra;
     2) já logado: preenche os dados da loja, o local no mapa e, se quiser, foto e história."""
     if request.user.is_authenticated and _banca_do_usuario(request):
         return redirect('painel')

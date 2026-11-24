@@ -2,13 +2,13 @@
 {% load static %}
 {% block titulo %}Entrar – Vitrine Digital{% endblock %}
 {% block conteudo %}
-<section class="tela login com-lado" data-ouvir="Esta é a tela de entrar. Escreva seu e-mail e sua senha e toque em Entrar. Se não tem conta, toque em Criar conta. Se esqueceu a senha, toque em Esqueci minha senha.">
+<section class="tela login com-lado" data-ouvir="Esta é a tela de entrar. Escreva seu usuário e sua senha e toque em Entrar. Se não tem conta, toque em Criar conta. Se esqueceu a senha, toque em Esqueci minha senha.">
   <aside class="conta-lado" style="--foto:url('{% static 'vitrine/fotos/mosaico-2.jpg' %}')"><div class="cl-txt"><img src="{% static 'vitrine/logo.svg' %}" alt="" class="cl-logo"><h2>Que bom ver você por aqui</h2><ul><li><i data-lucide="star" class="ic-l" aria-hidden="true"></i>Avalie as lojas onde você comprou</li><li><i data-lucide="store" class="ic-l" aria-hidden="true"></i>Comerciante: cuide da sua vitrine, preços e fotos</li><li><i data-lucide="shield-check" class="ic-l" aria-hidden="true"></i>Sua senha fica protegida e só você entra na sua conta</li></ul></div></aside>
   <div class="marca"><div class="logo" aria-hidden="true"><i data-lucide="log-in" class="ic-l" aria-hidden="true"></i></div><div><h1>Entrar</h1><small style="color:var(--cinza)">Para avaliar lojas ou cuidar da sua vitrine</small></div></div>
   <form class="caixa" method="post" style="margin:20px 0 0">
     {% csrf_token %}
-    {% if form.non_field_errors %}<div class="erro">E-mail ou senha incorretos.</div>{% endif %}
-    <div class="campo cheio" style="margin-top:8px"><label for="id_username">E-mail</label>{{ form.username }}</div>
+    {% if form.non_field_errors %}<div class="erro">Usuário ou senha incorretos.</div>{% endif %}
+    <div class="campo cheio" style="margin-top:8px"><label for="id_username">Usuário</label>{{ form.username }}</div>
     <div class="campo cheio" style="margin-top:10px"><label for="id_password">Senha</label>{{ form.password }}</div>
     <label class="mostra-senha"><input type="checkbox" class="ver-senha"> Mostrar a senha</label>
     <input type="hidden" name="next" value="{{ next }}">

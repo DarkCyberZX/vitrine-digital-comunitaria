@@ -199,42 +199,40 @@ class AvaliacaoTests(TestCase):
 
 class ContaTests(TestCase):
     def test_cadastro_cria_conta_e_entra(self):
-        r = self.client.post(reverse('cadastro'), {'first_name': 'Joana', 'email': 'Joana@Exemplo.com',
+        r = self.client.post(reverse('cadastro'), {'first_name': 'Joana', 'username': 'joana',
                                                    'password1': 'feira-boa-2026', 'password2': 'feira-boa-2026',
                                                    'next': '/banca/1/'})
         self.assertRedirects(r, '/banca/1/', fetch_redirect_response=False)
         u = get_user_model().objects.get(first_name='Joana')
-        self.assertEqual((u.username, u.email), ('joana@exemplo.com', 'joana@exemplo.com'))  # o e-mail vira o login
+        self.assertEqual((u.username, u.email), ('joana', ''))  # sem e-mail
         self.assertIn('_auth_user_id', self.client.session)
 
-    def test_cadastro_sem_campo_usuario_e_email_obrigatorio(self):
+    def test_cadastro_sem_campo_de_email(self):
         r = self.client.get(reverse('cadastro'))
-        self.assertNotContains(r, 'name="username"')
-        r = self.client.post(reverse('cadastro'), {'first_name': 'X', 'email': '',
-                                                   'password1': 'feira-boa-2026', 'password2': 'feira-boa-2026'})
-        self.assertEqual(r.status_code, 200)
-        self.assertFalse(get_user_model().objects.exists())
+        self.assertNotContains(r, 'name="email"')
+        self.assertContains(r, 'name="username"')
 
     def test_cadastro_nao_redireciona_para_site_externo(self):
-        r = self.client.post(reverse('cadastro'), {'first_name': 'X', 'email': 'x@exemplo.com', 'password1': 'feira-boa-2026',
+        r = self.client.post(reverse('cadastro'), {'first_name': 'X', 'username': 'xx', 'password1': 'feira-boa-2026',
                                                    'password2': 'feira-boa-2026', 'next': 'https://site-malicioso.com/'})
         self.assertRedirects(r, reverse('inicio'), fetch_redirect_response=False)
 
-    def test_email_repetido_recusado(self):
-        get_user_model().objects.create_user('a1', email='mesmo@exemplo.com', password='x-123456789')
-        self.client.post(reverse('cadastro'), {'first_name': 'B', 'email': 'MESMO@exemplo.com',
+    def test_usuario_repetido_recusado_mesmo_com_maiuscula(self):
+        get_user_model().objects.create_user('maria', password='x-123456789')
+        self.client.post(reverse('cadastro'), {'first_name': 'B', 'username': 'Maria',
                                                'password1': 'feira-boa-2026', 'password2': 'feira-boa-2026'})
         self.assertEqual(get_user_model().objects.count(), 1)
 
-    def test_entra_com_email_ou_usuario_antigo(self):
-        get_user_model().objects.create_user('lia', email='lia@exemplo.com', password='senha-boa-2026')
-        r = self.client.post(reverse('login'), {'username': 'LIA@exemplo.com', 'password': 'senha-boa-2026'})
+    def test_entra_com_usuario_ou_email_de_conta_antiga(self):
+        get_user_model().objects.create_user('lia@exemplo.com', email='lia@exemplo.com', password='senha-boa-2026')
+        get_user_model().objects.create_user('rui', password='senha-boa-2026')
+        r = self.client.post(reverse('login'), {'username': 'rui', 'password': 'senha-boa-2026'})
         self.assertEqual(r.status_code, 302)
         self.client.logout()
-        self.assertTrue(self.client.login(username='lia', password='senha-boa-2026'))  # contas antigas continuam
+        self.assertTrue(self.client.login(username='LIA@exemplo.com', password='senha-boa-2026'))  # contas criadas com e-mail
         self.client.logout()
-        r = self.client.post(reverse('login'), {'username': 'lia@exemplo.com', 'password': 'errada-000'})
-        self.assertContains(r, 'E-mail ou senha incorretos.')
+        r = self.client.post(reverse('login'), {'username': 'rui', 'password': 'errada-000'})
+        self.assertContains(r, 'Usuário ou senha incorretos.')
 
     def test_esqueci_senha_manda_link_e_troca(self):
         from django.core import mail
@@ -260,12 +258,12 @@ class CadastroLojaTests(TestCase):
     DADOS = {'l-nome': 'Pastel da Joana', 'l-responsavel': 'Joana', 'l-categoria': 'comida', 'l-whatsapp': '(82) 98888-7777',
              'l-bairro': 'Ponta Verde', 'l-ponto': 'Rua Durval Guimarães', 'l-cep': '57035060',
              'l-latitude': '-9.662003', 'l-longitude': '-35.707900', 'l-historia': ''}
-    CONTA = {'c-first_name': 'Joana', 'c-email': 'joana@exemplo.com', 'c-password1': 'Senha-forte-123', 'c-password2': 'Senha-forte-123'}
+    CONTA = {'c-first_name': 'Joana', 'c-username': 'joana', 'c-password1': 'Senha-forte-123', 'c-password2': 'Senha-forte-123'}
 
     def test_etapa_1_cria_so_a_conta_e_ja_entra(self):
         r = self.client.post(reverse('cadastro_loja'), self.CONTA)
         self.assertRedirects(r, reverse('cadastro_loja'))
-        self.assertTrue(get_user_model().objects.filter(username='joana@exemplo.com').exists())
+        self.assertTrue(get_user_model().objects.filter(username='joana').exists())
         self.assertFalse(Banca.objects.exists())
         self.assertContains(self.client.get(reverse('cadastro_loja')), 'Etapa 2')  # já logada, vê os dados da loja
 
@@ -274,7 +272,7 @@ class CadastroLojaTests(TestCase):
         r = self.client.post(reverse('cadastro_loja'), self.DADOS)
         self.assertRedirects(r, reverse('painel'))
         loja = Banca.objects.get(nome='Pastel da Joana')
-        self.assertEqual(loja.dono.username, 'joana@exemplo.com')
+        self.assertEqual(loja.dono.username, 'joana')
         self.assertEqual(loja.whatsapp, '5582988887777')  # número limpo, com 55
         self.assertEqual(loja.cep, '57035-060')
         self.assertTrue(loja.visivel)  # sem esperar aprovação
@@ -319,7 +317,7 @@ class CadastroLojaTests(TestCase):
         outro = get_user_model().objects.create_user('beto', password='senha-teste-123')
         self.client.post(reverse('cadastro_loja'), self.CONTA)
         self.client.post(reverse('cadastro_loja'), {**self.DADOS, 'l-dono': outro.pk})
-        self.assertEqual(Banca.objects.get(nome='Pastel da Joana').dono.username, 'joana@exemplo.com')
+        self.assertEqual(Banca.objects.get(nome='Pastel da Joana').dono.username, 'joana')
 
     def test_painel_sem_loja_manda_cadastrar(self):
         get_user_model().objects.create_user('maria', password='senha-teste-123')

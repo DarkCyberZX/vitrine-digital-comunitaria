@@ -4,7 +4,7 @@
 {% block cabeca %}{% if loja %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">{% endif %}{% endblock %}
 
 {% block conteudo %}
-<section class="tela tela-cad-loja" data-ouvir="{% if editando %}Aqui você muda os dados da sua loja. Depois toque em Salvar.{% elif conta %}Cadastrar a sua loja é de graça e tem duas etapas. Agora é a etapa 1: crie a sua conta com seu nome, seu e-mail e uma senha. Depois toque em Criar conta e continuar.{% else %}Etapa 2: os dados da loja. Escreva o nome da loja, o que você vende, o seu WhatsApp e, se quiser, o horário. Depois marque no mapa onde fica a loja: toque no mapa ou no botão Usar onde estou. Foto e história são opcionais. No fim, toque em Cadastrar minha loja.{% endif %}">
+<section class="tela tela-cad-loja" data-ouvir="{% if editando %}Aqui você muda os dados da sua loja. Depois toque em Salvar.{% elif conta %}Cadastrar a sua loja é de graça e tem duas etapas. Agora é a etapa 1: crie a sua conta com seu nome, um usuário e uma senha. Depois toque em Criar conta e continuar.{% else %}Etapa 2: os dados da loja. Escreva o nome da loja, o que você vende, o seu WhatsApp e, se quiser, o horário. Depois marque no mapa onde fica a loja: toque no mapa ou no botão Usar onde estou. Foto e história são opcionais. No fim, toque em Cadastrar minha loja.{% endif %}">
   <header class="cl-topo">
     <span class="ajuda-selo"><i data-lucide="store" class="ic-l" aria-hidden="true"></i> {% if editando %}Minha loja{% else %}Para quem vende{% endif %}</span>
     <h1>{% if editando %}Dados da minha loja{% else %}Cadastre a sua loja{% endif %}</h1>
@@ -31,7 +31,7 @@
       <legend><span class="ap-n">1</span> Sua conta <small>para entrar depois e cuidar da loja</small></legend>
       <div class="cl-campos">
         {% for campo in conta %}
-        <div class="campo{% if campo.name == 'email' or campo.name == 'first_name' %} cheio{% endif %}">
+        <div class="campo{% if campo.name == 'username' or campo.name == 'first_name' %} cheio{% endif %}">
           <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>{{ campo }}
           {% if campo.help_text %}<small class="ajuda">{{ campo.help_text|safe }}</small>{% endif %}
           {{ campo.errors }}
